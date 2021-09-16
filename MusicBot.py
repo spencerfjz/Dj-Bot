@@ -49,7 +49,7 @@ class MusicBot(commands.Cog):
     async def play(self, ctx, *, url):
         print(url)
         await self.join(ctx)
-        YDL_OPTIONS = {'format': "bestaudio"}
+        YDL_OPTIONS = {}
         vc = ctx.voice_client
         with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
             song_link_regex = r"^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$"
