@@ -25,6 +25,12 @@ for cog in cogs:
     cog.setup(client)
 
 
+@commands.command(aliases=["prune", "clean"])
+async def purge(ctx):
+    deleted = await ctx.channel.purge(limit=100, check=lambda m: m.author == client.user)
+    await ctx.send(f"♻️ Cleared {len(deleted)} messages")
+
+
 @client.event
 async def on_ready():
     print("Bot ready.")
