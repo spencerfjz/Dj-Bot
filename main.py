@@ -32,8 +32,13 @@ async def on_ready():
 
 @client.event
 async def on_voice_state_update(member, before, after):
-    isEmptyServer = before.channel is not None and len(
-        before.channel.members) == 1
+
+    total_member_count = 0
+    for member in before.channel.members:
+        if not member.bot:
+            total_member_count += 1
+
+    isEmptyServer = before.channel is not None and total_member_count == 1
 
     if(isEmptyServer):
         if(member.guild.voice_client is not None):
