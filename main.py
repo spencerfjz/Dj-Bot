@@ -1,5 +1,7 @@
 import discord
 import ctypes
+import sys
+import os
 import ctypes.util
 from discord.ext import commands
 from discord.errors import ClientException
