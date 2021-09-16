@@ -99,19 +99,21 @@ class MusicBot(commands.Cog):
                 url2 = info["formats"][0]["url"]
 
                 # Linux
-                audio_source = discord.FFmpegPCMAudio(url2, options={
-                                                      'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'})
+                FFMPEG_OPTS = {
+                    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
-                # WINDOWS
-                # audio_source = discord.FFmpegPCMAudio(
-                #     url2, executable="ffmpeg.exe")
+                audio_source = discord.FFmpegPCMAudio(url2, **FFMPEG_OPTS)
 
-                print(f"Playing {url}")
-                await ctx.send(f"**Playing** 🎶 `{url} -Now!`")
-                self.players[ctx.guild.id] = audio_source
-                vc.play(audio_source, after=lambda event: self.check_queue(
-                    ctx, ctx.guild.id))
-                print(info["title"])
+            # WINDOWS
+            # audio_source = discord.FFmpegPCMAudio(
+            #     url2, executable="ffmpeg.exe")
+
+            print(f"Playing {url}")
+            await ctx.send(f"**Playing** 🎶 `{url} -Now!`")
+            self.players[ctx.guild.id] = audio_source
+            vc.play(audio_source, after=lambda event: self.check_queue(
+                ctx, ctx.guild.id))
+            print(info["title"])
 
     async def queue(self, ctx, url):
         print("HERE")
@@ -139,8 +141,10 @@ class MusicBot(commands.Cog):
             url2 = info["formats"][0]["url"]
 
             # Linux
-            audio_source = discord.FFmpegPCMAudio(url2, options={
-                                                  'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'})
+            FFMPEG_OPTS = {
+                'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
+
+            audio_source = discord.FFmpegPCMAudio(url2, **FFMPEG_OPTS)
 
             # WINDOWS
             # audio_source = discord.FFmpegPCMAudio(
