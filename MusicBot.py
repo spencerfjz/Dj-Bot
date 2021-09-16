@@ -31,6 +31,10 @@ class MusicBot(commands.Cog):
             vc.play(player, after=lambda event: self.check_queue(
                 ctx, ctx.guild.id))
 
+    @commands.command(aliases=["now", "playing"])
+    async def current(self, ctx):
+        await ctx.send(embed=ctx.voice_state.current.create_embed())
+
     @commands.command()
     async def join(self, ctx):
         if ctx.author.voice is None:
