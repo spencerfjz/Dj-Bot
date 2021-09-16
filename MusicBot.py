@@ -56,7 +56,7 @@ class MusicBot(commands.Cog):
         await ctx.send("**Resumed**!")
 
     @commands.command()
-    async def play(self, ctx, *url):
+    async def play(self, ctx, *, url):
         print(url)
         await self.join(ctx)
         YDL_OPTIONS = {'format': "bestaudio"}
