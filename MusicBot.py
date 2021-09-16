@@ -72,7 +72,6 @@ class MusicBot(commands.Cog):
 
     @commands.command(aliases=["queue"])
     async def play(self, ctx, *, url):
-        print(url)
         await self.join(ctx)
         YDL_OPTIONS = {}
         vc = ctx.voice_client
@@ -96,6 +95,7 @@ class MusicBot(commands.Cog):
                         url = result[0]["link"]
 
                 info = ydl.extract_info(url, download=False)
+
                 url2 = info["formats"][0]["url"]
 
                 # Linux
@@ -116,8 +116,7 @@ class MusicBot(commands.Cog):
             print(info["title"])
 
     async def queue(self, ctx, url):
-        print("HERE")
-        print(url)
+        print(f"Queueing {url}")
         await self.join(ctx)
         YDL_OPTIONS = {}
         vc = ctx.voice_client
@@ -140,6 +139,7 @@ class MusicBot(commands.Cog):
             info = ydl.extract_info(url, download=False)
             url2 = info["formats"][0]["url"]
 
+            title = info["title"]
             # Linux
             FFMPEG_OPTS = {
                 'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
@@ -153,8 +153,8 @@ class MusicBot(commands.Cog):
             guild_id = ctx.guild.id
 
             if guild_id in self.queues:
-                self.queues[guild_id].append((audio_source, url))
+                self.queues[guild_id].append((audio_source, title))
             else:
-                self.queues[guild_id] = [(audio_source, url)]
+                self.queues[guild_id] = [(audio_source, title)]
 
             await ctx.send(f"**Queued** 🎤 `{url}`")
