@@ -99,7 +99,8 @@ class MusicBot(commands.Cog):
                 url2 = info["formats"][0]["url"]
 
                 # Linux
-                audio_source = discord.FFmpegPCMAudio(url2)
+                audio_source = discord.FFmpegPCMAudio(url2, options={
+                                                      'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'})
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
@@ -138,7 +139,8 @@ class MusicBot(commands.Cog):
             url2 = info["formats"][0]["url"]
 
             # Linux
-            audio_source = discord.FFmpegPCMAudio(url2)
+            audio_source = discord.FFmpegPCMAudio(url2, options={
+                                                  'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'})
 
             # WINDOWS
             # audio_source = discord.FFmpegPCMAudio(
