@@ -20,7 +20,7 @@ class MusicBot(commands.Cog):
         self.next = asyncio.Event()
 
     def check_queue(self, ctx, id):
-        if self.queues[id] != []:
+        if id in self.queues and self.queues[id] != []:
             player = self.queues[id].pop(0)[0]
             self.players[id] = player
             print(f"Playing next song from queue")
