@@ -31,9 +31,19 @@ class MusicBot(commands.Cog):
 
         await ctx.send(f"👍 **Joined** `{voice_channel.name}`")
 
+    @commands.command(aliases=["prune", "clear"])
+    async def purge(self, ctx):
+        channels = ctx.text_channels
+        for channel in channels:
+            deleted = await channel.purge(limit=100, check=lambda m: m.author == ctx.user)
+            if len(deleted) > 0:
+                await channel.send(f"♻️ Cleared {len(deleted)} messages")
+            else:
+                await channel.send(f"❌ No messages found to purge")
+
     @commands.command()
     async def disconnect(self, ctx):
-        ctx.voice_client.disconnect()
+        await ctx.voice_client.disconnect()
 
     @commands.command(aliases=["stop"])
     async def pause(self, ctx):
