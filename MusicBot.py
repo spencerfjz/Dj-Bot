@@ -35,6 +35,17 @@ class MusicBot(commands.Cog):
     async def current(self, ctx):
         await ctx.send(embed=ctx.voice_state.current.create_embed())
 
+    @commands.command(aliases=["continue", "skip"])
+    async def next(self, ctx):
+        if len(self.queues[ctx.guild.id] != 0):
+            await ctx.voice_client.stop()
+            recent_song = self.queues[ctx.guild.id][0][1]
+            self.check_queue(ctx, ctx.guild.id)
+
+            await ctx.send(f"**Now playing** 🎶 `{recent_song} -Now!`")
+        else:
+            await ctx.send(f"Queue is **EMPTY**")
+
     @commands.command()
     async def join(self, ctx):
         if ctx.author.voice is None:
@@ -84,10 +95,9 @@ class MusicBot(commands.Cog):
             await self.queue(ctx, url)
         else:
             with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
-                song_link_regex = r"^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$"
-
+                youtube_video_regex = r"^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$"
                 await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
-                if(not re.match(song_link_regex, url)):
+                if(not re.match(youtube_video_regex, url)):
                     # Perform search to find video
                     videoSearch = VideosSearch(url, limit=1)
                     result = videoSearch.result()["result"]
