@@ -69,6 +69,7 @@ class MusicBot(commands.Cog):
             info = ydl.extract_info(url, download=False)
             url2 = info["formats"][0]["url"]
             audio_source = discord.FFmpegPCMAudio(url2)
+            print(f"Playing {url}")
             await ctx.send(f"**Playing** 🎶 `{url} -Now!`")
             vc.play(audio_source)
             print(info["title"])
