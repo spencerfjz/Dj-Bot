@@ -151,4 +151,4 @@ class MusicBot(commands.Cog):
             else:
                 self.queues[guild_id] = [(audio_source, url)]
 
-            await ctx.send(f"**Queued** 🎤 {url}")
+            await ctx.send(f"**Queued** 🎤 `{url}`")
