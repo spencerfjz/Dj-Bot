@@ -1,5 +1,6 @@
 import re
 import random
+import time
 from sys import executable
 from youtubesearchpython import VideosSearch
 import discord
@@ -26,8 +27,9 @@ class MusicBot(commands.Cog):
             self.players[id] = player
             print(f"Playing next song from queue")
 
-            # Linux
             vc = ctx.voice_client
+
+            # Linux
             vc.play(player, after=lambda event: self.check_queue(
                 ctx, ctx.guild.id))
 
@@ -38,15 +40,15 @@ class MusicBot(commands.Cog):
     @commands.command(aliases=["continue", "skip"])
     async def next(self, ctx):
         if ctx.guild.id in self.queues and len(self.queues[ctx.guild.id]) != 0:
-            await ctx.voice_client.pause()
-            recent_song = self.queues[ctx.guild.id][0][1]
-            await ctx.send(f"**Now playing** 🎶 `{recent_song} -Now!`")
-            self.check_queue(ctx, ctx.guild.id)
-
+            info = self.queues[ctx.guild.id][0][1]
+            recent_song = info["title"]
+            await ctx.send(f"**Now playing** 🎶 `{recent_song}`")
+            await ctx.send(embed=self.build_youtube_embed(ctx, info))
+            await ctx.voice_client.stop()
         else:
             await ctx.send(f"Queue is **EMPTY**")
 
-    @commands.command()
+    @commands.command(aliases=["summon"])
     async def join(self, ctx):
         if ctx.author.voice is None:
             await ctx.send(f"You must be in voice channel! {ctx.author.mention}")
@@ -59,7 +61,7 @@ class MusicBot(commands.Cog):
         else:
             await ctx.voice_client.move_to(voice_channel)
 
-    @commands.command()
+    @commands.command(aliases=["leave", "quit", "exit"])
     async def disconnect(self, ctx):
         await ctx.voice_client.disconnect()
 
@@ -81,19 +83,47 @@ class MusicBot(commands.Cog):
         ctx.voice_client.resume()
         await ctx.send("**Resumed**!")
 
-    @commands.command()
+    @commands.command(aliases=["queue"])
     async def chain(self, ctx):
         if ctx.guild.id not in self.queues or len(self.queues[ctx.guild.id]) == 0:
             await ctx.send("**Queue** is empty 🗍")
         else:
             list_of_songs = []
             for count, song in enumerate(self.queues[ctx.guild.id]):
-                list_of_songs.append(f"{count+1}: {song[1]}")
+                title = song[1]["title"]
+                list_of_songs.append(f"{count+1}: {title}")
 
             output_string = '\n'.join(list_of_songs)
             await ctx.send(f"```yaml\n{output_string}```")
 
-    @commands.command(aliases=["queue"])
+    def build_youtube_embed(self, ctx, info):
+        duration = time.strftime("%M:%S", time.gmtime(info["duration"]))
+        title = info["title"]
+        author_name = ctx.message.author.name if ctx.message else None
+        thumbnail = info["thumbnail"]
+
+        embed = discord.Embed(
+            title="Now Playing 🎵",
+            description=title,
+            colour=discord.Colour.blue()
+        )
+        embed.set_thumbnail(url=thumbnail)
+        embed.add_field(
+            name=f"`Length:`", value=duration, inline=False)
+
+        if author_name is not None:
+            embed.add_field(
+                name=f"`Requested by:`", value=author_name, inline=False)
+
+        next_song = self.queues[ctx.guild.id][1][1]["title"] if ctx.guild.id in self.queues and len(
+            self.queues[ctx.guild.id]) != 1 else "Nothing"
+
+        embed.add_field(
+            name=f"`Up Next:`", value=next_song, inline=False)
+
+        return embed
+
+    @commands.command(aliases=["add", "playnext"])
     async def play(self, ctx, *, url):
         await self.join(ctx)
         YDL_OPTIONS = {}
@@ -124,18 +154,22 @@ class MusicBot(commands.Cog):
                 FFMPEG_OPTS = {
                     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
-                audio_source = discord.FFmpegPCMAudio(url2, **FFMPEG_OPTS)
+                # audio_source = discord.FFmpegPCMAudio(url2, **FFMPEG_OPTS)
 
-            # WINDOWS
-            # audio_source = discord.FFmpegPCMAudio(
-            #     url2, executable="ffmpeg.exe")
+                # WINDOWS
+                audio_source = discord.FFmpegPCMAudio(
+                    url2, executable="ffmpeg.exe")
 
-            print(f"Playing {url}")
-            await ctx.send(f"**Playing** 🎶 `{url} -Now!`")
-            self.players[ctx.guild.id] = audio_source
-            vc.play(audio_source, after=lambda event: self.check_queue(
-                ctx, ctx.guild.id))
-            print(info["title"])
+                print(f"Playing {url}")
+
+                embed = self.build_youtube_embed(ctx, info)
+
+                await ctx.send(f"**Playing** 🎶 `{url} - Now!`")
+                await ctx.send(embed=embed)
+
+                self.players[ctx.guild.id] = audio_source
+                vc.play(audio_source, after=lambda event: self.check_queue(
+                    ctx, ctx.guild.id))
 
     async def queue(self, ctx, url):
         print(f"Queueing {url}")
@@ -161,7 +195,6 @@ class MusicBot(commands.Cog):
             info = ydl.extract_info(url, download=False)
             url2 = info["formats"][0]["url"]
 
-            title = info["title"]
             # Linux
             FFMPEG_OPTS = {
                 'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
@@ -175,8 +208,8 @@ class MusicBot(commands.Cog):
             guild_id = ctx.guild.id
 
             if guild_id in self.queues:
-                self.queues[guild_id].append((audio_source, title))
+                self.queues[guild_id].append((audio_source, info))
             else:
-                self.queues[guild_id] = [(audio_source, title)]
+                self.queues[guild_id] = [(audio_source, info)]
 
             await ctx.send(f"**Queued** 🎤 `{url}`")

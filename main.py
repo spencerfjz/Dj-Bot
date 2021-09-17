@@ -9,9 +9,10 @@ from discord_components import Button, ButtonStyle
 import MusicBot
 
 
-opus = ctypes.util.find_library('opus')
-discord.opus.load_opus(opus)
-discord.opus.is_loaded()
+# Following three lines @Linux
+# opus = ctypes.util.find_library('opus')
+# discord.opus.load_opus(opus)
+# discord.opus.is_loaded()
 
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 
