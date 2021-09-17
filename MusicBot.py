@@ -129,6 +129,8 @@ class MusicBot(commands.Cog):
     async def play(self, ctx, *, url):
         await self.join(ctx)
         YDL_OPTIONS = {}
+        FFMPEG_OPTS = {
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         vc = ctx.voice_client
 
         if vc.is_playing():
@@ -168,9 +170,6 @@ class MusicBot(commands.Cog):
 
                 url2 = info["formats"][0]["url"]
 
-                FFMPEG_OPTS = {
-                    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-
                 # Linux
                 audio_source = discord.FFmpegPCMAudio(url2, **FFMPEG_OPTS)
 
@@ -193,6 +192,8 @@ class MusicBot(commands.Cog):
         print(f"Queueing {url}")
         await self.join(ctx)
         YDL_OPTIONS = {}
+        FFMPEG_OPTS = {
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         vc = ctx.voice_client
 
         with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
@@ -228,9 +229,6 @@ class MusicBot(commands.Cog):
             url2 = info["formats"][0]["url"]
 
             # Linux
-            FFMPEG_OPTS = {
-                'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
-
             audio_source = discord.FFmpegPCMAudio(url2, **FFMPEG_OPTS)
 
             # WINDOWS
