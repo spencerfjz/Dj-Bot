@@ -33,7 +33,7 @@ async def purge(ctx):
 
 @client.event
 async def on_ready():
-    print("Bot ready.")
+    print("Rhythm bot here for da beats.")
 
 
 @client.event
@@ -49,6 +49,7 @@ async def on_voice_state_update(member, before, after):
             total_members += 1
 
     if total_members == 1:
+        print("Leaving empty voice channel.")
         await voice_state.disconnect()
 
 
