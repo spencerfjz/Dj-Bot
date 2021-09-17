@@ -36,28 +36,20 @@ async def on_ready():
     print("Bot ready.")
 
 
-# @client.event
-# async def on_voice_state_update(member, before, after):
-#     if before.channel is None:
-#         return
+@client.event
+async def on_voice_state_update(member, before, after):
+    voice_state = member.guild.voice_client
 
-#     total_member_count = 0
-#     for member in before.channel.members:
-#         if not member.bot:
-#             total_member_count += 1
+    if voice_state is None:
+        return
 
-#     isEmptyServer = total_member_count == 1
+    total_members = 0
+    for member in voice_state.channel.members:
+        if member.id == client.id or not member.bot:
+            total_members += 1
 
-#     if(isEmptyServer):
-#         if(member.guild.voice_client is not None):
-#             print("Disconnecting from empty voice channel")
-#             text_channels = member.guild.text_channels
-#             text_channel_id = text_channels[0].id
-#             if text_channel_id is not None:
-#                 channel = client.get_channel(text_channel_id)
-#                 await channel.send(f"**Disconnecting!** ...")
-
-#             await member.guild.voice_client.disconnect()
+    if total_members == 1:
+        await voice_state.disconnect()
 
 
 if __name__ == "__main__":
