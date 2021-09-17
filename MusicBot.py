@@ -6,7 +6,7 @@ from youtubesearchpython import VideosSearch
 import discord
 import asyncio
 from discord.ext import commands
-from pytube import YouTube
+from pytube import YouTube, Playlist
 import youtube_dl
 
 
@@ -136,8 +136,24 @@ class MusicBot(commands.Cog):
         else:
             with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
                 youtube_video_regex = r"^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$"
+                youtube_playlist_regex = r"^.*(youtu.be\/|list=)([^#\&\?]*).*"
                 await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
-                if(not re.match(youtube_video_regex, url)):
+                if(re.match(youtube_playlist_regex, url)):
+                    playlist = Playlist(url)
+                    url = playlist[0]
+                    playlist.pop(0)
+                    for link in playlist:
+                        info = ydl.extract_info(link, download=False)
+                        url2 = info["formats"][0]["url"]
+                        audio_source = discord.FFmpegPCMAudio(
+                            url2, **FFMPEG_OPTS)
+                        if ctx.guild.id in self.queues:
+                            self.queues[ctx.guild.id].append(
+                                (audio_source, info))
+                        else:
+                            self.queues[ctx.guild.id] = [(audio_source, info)]
+
+                elif(not re.match(youtube_video_regex, url)):
                     # Perform search to find video
                     videoSearch = VideosSearch(url, limit=1)
                     result = videoSearch.result()["result"]
@@ -181,8 +197,22 @@ class MusicBot(commands.Cog):
 
         with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
             song_link_regex = r"^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$"
-
+            youtube_playlist_regex = r"^.*(youtu.be\/|list=)([^#\&\?]*).*"
             await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
+            if(re.match(youtube_playlist_regex, url)):
+                await ctx.send(f"**Queued** 🎤 `{url}`")
+                playlist = Playlist(url)
+                for link in playlist:
+                    info = ydl.extract_info(link, download=False)
+                    url2 = info["formats"][0]["url"]
+                    audio_source = discord.FFmpegPCMAudio(
+                        url2, **FFMPEG_OPTS)
+                    if ctx.guild.id in self.queues:
+                        self.queues[ctx.guild.id].append(
+                            (audio_source, info))
+                    else:
+                        self.queues[ctx.guild.id] = [(audio_source, info)]
+                return
             if(not re.match(song_link_regex, url)):
                 # Perform search to find video
                 videoSearch = VideosSearch(url, limit=1)
