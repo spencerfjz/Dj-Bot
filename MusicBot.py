@@ -45,6 +45,8 @@ class MusicBot(commands.Cog):
             await ctx.send(f"**Now playing** 🎶 `{recent_song}`")
             await ctx.send(embed=self.build_youtube_embed(ctx, info))
             await ctx.voice_client.stop()
+        elif ctx.voice_client.is_playing():
+            ctx.voice_client.stop()
         else:
             await ctx.send(f"Queue is **EMPTY**")
 
