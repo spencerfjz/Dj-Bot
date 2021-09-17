@@ -35,6 +35,7 @@ async def purge(ctx):
 @client.event
 async def on_ready():
     print("Rhythm bot here for da beats.")
+    await client.change_presence(activity=discord.Game("Da Tunes 🎵"))
 
 
 @client.event
