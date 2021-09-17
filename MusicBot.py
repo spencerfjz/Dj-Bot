@@ -151,9 +151,9 @@ class MusicBot(commands.Cog):
                 await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
                 if(re.match(youtube_playlist_regex, url)):
                     playlist = Playlist(url)
-                    url = playlist[0]
-                    playlist.pop(0)
-                    for link in playlist:
+                    url = playlist.video_urls[0]
+                    for index in range(1, len(playlist.video_urls)):
+                        link = playlist.video_urls[index]
                         info = ydl.extract_info(link, download=False)
                         url2 = info["formats"][0]["url"]
                         audio_source = discord.FFmpegPCMAudio(
@@ -212,7 +212,8 @@ class MusicBot(commands.Cog):
             if(re.match(youtube_playlist_regex, url)):
                 await ctx.send(f"**Queued** 🎤 `{url}`")
                 playlist = Playlist(url)
-                for link in playlist:
+                for index in range(1, len(playlist.video_urls)):
+                    link = playlist.video_urls[index]
                     info = ydl.extract_info(link, download=False)
                     url2 = info["formats"][0]["url"]
                     audio_source = discord.FFmpegPCMAudio(
