@@ -150,15 +150,15 @@ class MusicBot(commands.Cog):
 
                 url2 = info["formats"][0]["url"]
 
-                # Linux
                 FFMPEG_OPTS = {
                     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
-                # audio_source = discord.FFmpegPCMAudio(url2, **FFMPEG_OPTS)
+                # Linux
+                audio_source = discord.FFmpegPCMAudio(url2, **FFMPEG_OPTS)
 
                 # WINDOWS
-                audio_source = discord.FFmpegPCMAudio(
-                    url2, executable="ffmpeg.exe")
+                # audio_source = discord.FFmpegPCMAudio(
+                #     url2, executable="ffmpeg.exe")
 
                 print(f"Playing {url}")
 
