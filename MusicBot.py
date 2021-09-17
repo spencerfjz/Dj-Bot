@@ -37,7 +37,7 @@ class MusicBot(commands.Cog):
 
     @commands.command(aliases=["continue", "skip"])
     async def next(self, ctx):
-        if len(self.queues[ctx.guild.id] != 0):
+        if len(self.queues[ctx.guild.id]) != 0:
             await ctx.voice_client.stop()
             recent_song = self.queues[ctx.guild.id][0][1]
             self.check_queue(ctx, ctx.guild.id)
