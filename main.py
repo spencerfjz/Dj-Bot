@@ -45,7 +45,7 @@ async def on_voice_state_update(member, before, after):
 
     total_members = 0
     for member in voice_state.channel.members:
-        if member.id == client.id or not member.bot:
+        if str(member.id) == "877284062954389605" or not member.bot:
             total_members += 1
 
     if total_members == 1:
