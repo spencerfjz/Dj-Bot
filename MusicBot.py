@@ -1,4 +1,5 @@
 import re
+import random
 from sys import executable
 from youtubesearchpython import VideosSearch
 import discord
@@ -62,6 +63,14 @@ class MusicBot(commands.Cog):
     @commands.command()
     async def disconnect(self, ctx):
         await ctx.voice_client.disconnect()
+
+    @commands.command()
+    async def shuffle(self, ctx):
+        if ctx.guild.id in self.queues and len(self.queues[ctx.guild.id]) != 0:
+            random.shuffle(self.queues[ctx.guild.id])
+            await ctx.send(f"**Shuffled queue** 👌")
+        else:
+            await ctx.send(f"Queue is **EMPTY**")
 
     @commands.command(aliases=["stop"])
     async def pause(self, ctx):
