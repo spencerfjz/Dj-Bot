@@ -40,9 +40,9 @@ class MusicBot(commands.Cog):
         if len(self.queues[ctx.guild.id]) != 0:
             await ctx.voice_client.stop()
             recent_song = self.queues[ctx.guild.id][0][1]
+            await ctx.send(f"**Now playing** 🎶 `{recent_song} -Now!`")
             self.check_queue(ctx, ctx.guild.id)
 
-            await ctx.send(f"**Now playing** 🎶 `{recent_song} -Now!`")
         else:
             await ctx.send(f"Queue is **EMPTY**")
 
