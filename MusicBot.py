@@ -37,7 +37,7 @@ class MusicBot(commands.Cog):
     async def current(self, ctx):
         await ctx.send(embed=ctx.voice_state.current.create_embed())
 
-    @commands.command
+    @commands.command()
     async def clear(self, ctx):
         if ctx.guild.id not in self.queues or len(self.queues[ctx.guild.id]) == 0:
             # TODO: USE EMBED
