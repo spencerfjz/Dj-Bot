@@ -37,6 +37,15 @@ class MusicBot(commands.Cog):
     async def current(self, ctx):
         await ctx.send(embed=ctx.voice_state.current.create_embed())
 
+    @commands.command
+    async def clear(self, ctx):
+        if ctx.guild.id not in self.queues or len(self.queues[ctx.guild.id]) == 0:
+            # TODO: USE EMBED
+            await ctx.send("**Queue** is empty")
+        else:
+            await ctx. send("**Queue** is cleared!")
+            self.queues.clear()
+
     @commands.command(aliases=["continue", "skip"])
     async def next(self, ctx):
         if ctx.guild.id in self.queues and len(self.queues[ctx.guild.id]) != 0:
