@@ -317,7 +317,7 @@ class MusicBot(commands.Cog):
 
             guild_id = ctx.guild.id
             title = VideosSearch(url, limit=1).result()[
-                "result"][0].title
+                "result"][0]["title"]
             self.players[guild_id] = url
             if guild_id in self.queues:
                 self.queues[guild_id].append((url, title))
