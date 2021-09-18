@@ -51,7 +51,7 @@ class MusicBot(commands.Cog):
         if ctx.guild.id in self.queues and len(self.queues[ctx.guild.id]) != 0:
             info = self.queues[ctx.guild.id][0][1]
             recent_song = info["title"]
-            await ctx.send(f"**Now playing** 🎶 `{recent_song}`")
+            await ctx.send("⏩ **Skipped** 👍")
             await ctx.send(embed=self.build_youtube_embed(ctx, info))
             await ctx.voice_client.stop()
         elif ctx.voice_client.is_playing():
