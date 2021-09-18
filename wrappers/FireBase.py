@@ -34,10 +34,18 @@ class FireBaseContainer:
         settings_collection = self.db.collection("settings")
         settings_collection.document(guild_id).delete()
 
+    def update_prefix(self, guild_id, prefix):
+        settings = self.db.collection("settings").document(
+            guild_id).get().to_dict()
+
+        settings["prefix"] = prefix
+
+        self.db.collection("settings").document(guild_id).set(settings)
+
     def add_text_channel_to_blacklist(self, guild_id, text_channel):
         settings = self.db.collection("settings").document(
             guild_id).get().to_dict()
-        
+
         if text_channel in settings["blacklist"]:
             return
 
@@ -53,3 +61,10 @@ class FireBaseContainer:
             return True
         else:
             return False
+
+    def retrieve_prefix(self, guild_id):
+        settings_collection = self.db.collection("settings")
+        guild_settings = settings_collection.document(
+            guild_id).get().to_dict()
+
+        return guild_settings["prefix"]

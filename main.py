@@ -21,7 +21,15 @@ DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 cogs = [MusicBot, SettingsBot]
 intents = discord.Intents.all()
 intents.members = True
-client = commands.Bot(command_prefix="-", intents=discord.Intents.all())
+
+
+async def determine_prefix(bot, message):
+    guild_id = SettingsBot.FireBase.retrieve_prefix(str(message.guild.id))
+    return guild_id
+
+
+client = commands.Bot(command_prefix=determine_prefix,
+                      intents=discord.Intents.all())
 
 for cog in cogs:
     cog.setup(client)

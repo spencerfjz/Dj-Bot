@@ -23,6 +23,12 @@ class SettingsBot(commands.Cog):
         FireBase.remove_server(str(guild.id))
 
     @commands.command()
+    async def prefix(self, ctx, prefix):
+        guild_id = str(ctx.guild.id)
+        FireBase.update_prefix(guild_id, prefix)
+        await ctx.send(f"👍 **Prefix set to {prefix}**")
+
+    @commands.command()
     async def blacklist(self, ctx, arg):
         text_channel = arg.replace("<#", "")
         text_channel = text_channel.replace(">", "")
