@@ -22,13 +22,10 @@ class SettingsBot(commands.Cog):
         FireBase.remove_server(str(guild.id))
 
     @commands.command()
-    async def settings(self, ctx, *args):
-        # TODO SUPPORT MORE THAN BLACKLIST
-        if len(args) == 2:
-            if args[0].lower() == "blacklist":
-                if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
-                    await ctx.send(f"`{ctx.channel}` is already in the blacklist")
-                else:
-                    FireBase.add_text_channel_to_blacklist(
-                        str(ctx.guild.id), args[1])
-                    await ctx.send(f"Blacklisted `{ctx.channel}`")
+    async def blacklist(self, ctx, arg):
+        if FireBase.is_in_blacklist(str(ctx.guild.id), arg):
+            await ctx.send(f"`{ctx.channel}` is already in the blacklist")
+        else:
+            FireBase.add_text_channel_to_blacklist(
+                str(ctx.guild.id), arg)
+            await ctx.send(f"Blacklisted `{ctx.channel}`")
