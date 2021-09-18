@@ -29,7 +29,6 @@ class MusicBot(commands.Cog):
 
             vc = ctx.voice_client
 
-            # Linux
             vc.play(player, after=lambda event: self.check_queue(
                 ctx, ctx.guild.id))
 
@@ -46,7 +45,7 @@ class MusicBot(commands.Cog):
             await ctx. send("💥 **Cleared...** ⏹")
             self.queues.clear()
 
-    @commands.command(aliases=["continue", "skip","fs"])
+    @commands.command(aliases=["continue", "skip", "fs"])
     async def next(self, ctx):
         if ctx.guild.id in self.queues and len(self.queues[ctx.guild.id]) != 0:
             info = self.queues[ctx.guild.id][0][1]
@@ -151,10 +150,11 @@ class MusicBot(commands.Cog):
                 await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
                 if(re.match(youtube_playlist_regex, url)):
                     playlist = Playlist(url)
-                    video_urls = list(playlist.video_urls)
-                    url = video_urls[0]
+                    video_urls = list(playlist.videos)
+                    print(f"{len(video_urls)} items in playlist")
+                    url = video_urls[0].watch_url
                     for index in range(1, len(video_urls)):
-                        link = video_urls[index]
+                        link = video_urls[index].watch_url
                         info = ydl.extract_info(link, download=False)
                         url2 = info["formats"][0]["url"]
                         audio_source = discord.FFmpegPCMAudio(
@@ -213,9 +213,9 @@ class MusicBot(commands.Cog):
             if(re.match(youtube_playlist_regex, url)):
                 await ctx.send(f"**Queued** 🎤 `{url}`")
                 playlist = Playlist(url)
-                video_urls = list(playlist.video_urls)
+                video_urls = list(playlist.videos)
                 for index in range(1, len(video_urls)):
-                    link = video_urls[index]
+                    link = video_urls[index].watch_url
                     info = ydl.extract_info(link, download=False)
                     url2 = info["formats"][0]["url"]
                     audio_source = discord.FFmpegPCMAudio(
@@ -248,7 +248,7 @@ class MusicBot(commands.Cog):
             #     url2, executable="ffmpeg.exe")
 
             guild_id = ctx.guild.id
- 
+
             self.players[guild_id] = audio_source
             if guild_id in self.queues:
                 self.queues[guild_id].append((audio_source, info))
