@@ -52,7 +52,6 @@ class FireBaseContainer:
         black_list = set(self.db.collection("settings").document(
             guild_id).get().to_dict()["blacklist"])
 
-        print(black_list, text_channel_id)
         if text_channel_id in black_list:
             return True
         else:

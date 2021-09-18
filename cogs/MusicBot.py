@@ -8,6 +8,7 @@ import asyncio
 from discord.ext import commands
 from pytube import YouTube, Playlist
 import youtube_dl
+from cogs.SettingsBot import FireBase
 
 
 def setup(client):
@@ -34,10 +35,19 @@ class MusicBot(commands.Cog):
 
     @commands.command(aliases=["now", "playing"])
     async def current(self, ctx):
-        await ctx.send(embed=ctx.voice_state.current.create_embed())
+        if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
+            await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+
+        # TODO USE EMBED
+        # await ctx.send(embed=ctx.voice_state.current.create_embed())
 
     @commands.command()
     async def clear(self, ctx):
+        if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
+            await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+
         if ctx.guild.id not in self.queues or len(self.queues[ctx.guild.id]) == 0:
             # TODO: USE EMBED
             await ctx.send("**Queue** is empty")
@@ -47,6 +57,10 @@ class MusicBot(commands.Cog):
 
     @commands.command(aliases=["continue", "skip", "fs"])
     async def next(self, ctx):
+        if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
+            await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+
         if ctx.guild.id in self.queues and len(self.queues[ctx.guild.id]) != 0:
             info = self.queues[ctx.guild.id][0][1]
             recent_song = info["title"]
@@ -60,6 +74,10 @@ class MusicBot(commands.Cog):
 
     @commands.command(aliases=["summon"])
     async def join(self, ctx):
+        if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
+            await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+
         if ctx.author.voice is None:
             await ctx.send(f"You must be in voice channel! {ctx.author.mention}")
 
@@ -73,10 +91,18 @@ class MusicBot(commands.Cog):
 
     @commands.command(aliases=["leave", "quit", "exit"])
     async def disconnect(self, ctx):
+        if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
+            await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+
         await ctx.voice_client.disconnect()
 
     @commands.command()
     async def shuffle(self, ctx):
+        if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
+            await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+
         if ctx.guild.id in self.queues and len(self.queues[ctx.guild.id]) != 0:
             random.shuffle(self.queues[ctx.guild.id])
             await ctx.send(f"**Shuffled queue** 👌")
@@ -85,16 +111,28 @@ class MusicBot(commands.Cog):
 
     @commands.command(aliases=["stop"])
     async def pause(self, ctx):
+        if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
+            await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+
         ctx.voice_client.pause()
         await ctx.send("**Paused** ⏸️")
 
     @commands.command()
     async def resume(self, ctx):
+        if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
+            await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+
         ctx.voice_client.resume()
         await ctx.send("**Resumed**!")
 
     @commands.command(aliases=["queue"])
     async def chain(self, ctx):
+        if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
+            await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+
         if ctx.guild.id not in self.queues or len(self.queues[ctx.guild.id]) == 0:
             await ctx.send("**Queue** is empty 🗍")
         else:
@@ -133,8 +171,21 @@ class MusicBot(commands.Cog):
 
         return embed
 
+    def build_blacklist_embed(self, channel_name):
+        embed = discord.Embed(
+            title=f"❌ **{channel_name}** is blacklisted.",
+            deescription="blacklist_message",
+            colour=discord.Colour.dark_red()
+        )
+
+        return embed
+
     @commands.command(aliases=["add", "playnext"])
     async def play(self, ctx, *, url):
+        if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
+            await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+
         await self.join(ctx)
         YDL_OPTIONS = {}
         FFMPEG_OPTS = {
