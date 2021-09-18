@@ -40,3 +40,9 @@ class SettingsBot(commands.Cog):
     async def reset(self, ctx):
         FireBase.remove_server(str(ctx.guild.id))
         FireBase.add_new_server(str(ctx.guild.id))
+        embed = discord.Embed(
+            title=f"♻️ Reset settings for **{ctx.guild}**",
+            deescription="reset_message",
+            colour=discord.Colour.dark_gray()
+        )
+        await ctx.send(embed=embed)
