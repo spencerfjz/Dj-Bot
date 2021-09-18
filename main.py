@@ -35,13 +35,20 @@ async def purge(ctx):
 
 @client.command()
 async def ping(ctx):
-    embed = discord.Embed(
-        title=f"🏓 My ping is {round(client.latency,1)}",
-        deescription="ping_message",
-        colour=discord.Colour.dark_theme()
-    )
-
+    if round(client.latency * 1000) <= 50:
+        embed = discord.Embed(
+            title="PING", description=f":ping_pong: My ping is **{round(client.latency *1000)}** ms.", color=0x44ff44)
+    elif round(client.latency * 1000) <= 100:
+        embed = discord.Embed(
+            title="PING", description=f":ping_pong: My ping is **{round(client.latency *1000)}** ms.", color=0xffd000)
+    elif round(client.latency * 1000) <= 200:
+        embed = discord.Embed(
+            title="PING", description=f":ping_pong: My ping is **{round(client.latency *1000)}** ms.", color=0xff6600)
+    else:
+        embed = discord.Embed(
+            title="PING", description=f":ping_pong: My ping is **{round(client.latency *1000)}** ms.", color=0x990000)
     await ctx.send(embed=embed)
+
 
 @client.event
 async def on_ready():
