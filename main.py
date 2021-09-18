@@ -6,7 +6,8 @@ import ctypes.util
 from discord.ext import commands
 from discord.errors import ClientException
 from discord_components import Button, ButtonStyle
-import MusicBot
+import cogs.MusicBot as MusicBot
+import cogs.SettingsBot as SettingsBot
 
 
 # Following three lines @Linux
@@ -17,7 +18,7 @@ discord.opus.is_loaded()
 DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 
 
-cogs = [MusicBot]
+cogs = [MusicBot, SettingsBot]
 intents = discord.Intents.all()
 intents.members = True
 client = commands.Bot(command_prefix="-", intents=discord.Intents.all())
