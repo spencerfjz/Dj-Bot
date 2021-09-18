@@ -248,7 +248,8 @@ class MusicBot(commands.Cog):
             #     url2, executable="ffmpeg.exe")
 
             guild_id = ctx.guild.id
-
+ 
+            self.players[guild_id] = audio_source
             if guild_id in self.queues:
                 self.queues[guild_id].append((audio_source, info))
             else:
