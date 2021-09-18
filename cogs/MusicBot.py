@@ -115,6 +115,7 @@ class MusicBot(commands.Cog):
             await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
             return
 
+        self.queues.pop(ctx.guild.id, None)
         await ctx.voice_client.disconnect()
 
     @commands.command()
