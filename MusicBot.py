@@ -46,7 +46,7 @@ class MusicBot(commands.Cog):
             await ctx. send("💥 **Cleared...** ⏹")
             self.queues.clear()
 
-    @commands.command(aliases=["continue", "skip"])
+    @commands.command(aliases=["continue", "skip","fs"])
     async def next(self, ctx):
         if ctx.guild.id in self.queues and len(self.queues[ctx.guild.id]) != 0:
             info = self.queues[ctx.guild.id][0][1]
