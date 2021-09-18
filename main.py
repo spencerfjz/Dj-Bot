@@ -33,6 +33,16 @@ async def purge(ctx):
     await ctx.send(f"♻️ Cleared {len(deleted)} messages")
 
 
+@client.command()
+async def ping(ctx):
+    embed = discord.Embed(
+        title=f"🏓 My ping is {round(client.latency,1)}",
+        deescription="ping_message",
+        colour=discord.Colour.dark_theme()
+    )
+
+    await ctx.send(embed=embed)
+
 @client.event
 async def on_ready():
     print("Rhythm bot here for da beats.")
