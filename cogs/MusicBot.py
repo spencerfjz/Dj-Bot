@@ -9,6 +9,10 @@ from discord.ext import commands
 from pytube import YouTube, Playlist
 import youtube_dl
 from cogs.SettingsBot import FireBase
+import DiscordUtils
+
+FFMPEG_OPTS = {
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
 
 def setup(client):
@@ -25,13 +29,24 @@ class MusicBot(commands.Cog):
     def check_queue(self, ctx, id):
         if id in self.queues and self.queues[id] != []:
             player = self.queues[id].pop(0)[0]
-            self.players[id] = player
-            print(f"Playing next song from queue")
 
-            vc = ctx.voice_client
+            with youtube_dl.YoutubeDL({}) as ydl:
+                info = ydl.extract_info(player, download=False)
+                url2 = info["formats"][0]["url"]
+                # Linux
+                audio_source = discord.FFmpegPCMAudio(url2, **FFMPEG_OPTS)
 
-            vc.play(player, after=lambda event: self.check_queue(
-                ctx, ctx.guild.id))
+                # WINDOWS
+                # audio_source = discord.FFmpegPCMAudio(
+                #     url2, executable="ffmpeg.exe")
+
+                self.players[id] = audio_source
+                print(f"Playing next song from queue")
+
+                vc = ctx.voice_client
+
+                vc.play(audio_source, after=lambda event: self.check_queue(
+                    ctx, ctx.guild.id))
 
     @commands.command(aliases=["now", "playing"])
     async def current(self, ctx):
@@ -62,11 +77,16 @@ class MusicBot(commands.Cog):
             return
 
         if ctx.guild.id in self.queues and len(self.queues[ctx.guild.id]) != 0:
-            info = self.queues[ctx.guild.id][0][1]
-            recent_song = info["title"]
+            url = self.queues[ctx.guild.id][0][0]
+            result = VideosSearch(url).result()["result"][0]
+            info = {
+                "duration": result["duration"],
+                "title": result["title"],
+                "thumbnail": result["thumbnails"][0]["url"],
+            }
             await ctx.send("⏩ **Skipped** 👍")
             await ctx.send(embed=self.build_youtube_embed(ctx, info))
-            await ctx.voice_client.stop()
+            ctx.voice_client.stop()
         elif ctx.voice_client.is_playing():
             ctx.voice_client.stop()
         else:
@@ -136,16 +156,35 @@ class MusicBot(commands.Cog):
         if ctx.guild.id not in self.queues or len(self.queues[ctx.guild.id]) == 0:
             await ctx.send("**Queue** is empty 🗍")
         else:
+            paginator = DiscordUtils.Pagination.CustomEmbedPaginator(
+                ctx, remove_reactions=True)
+            paginator.add_reaction('⏮️', "first")
+            paginator.add_reaction('⏪', "back")
+            paginator.add_reaction('⏩', "next")
+            paginator.add_reaction('⏭️', "last")
+            embeds = []
             list_of_songs = []
-            for count, song in enumerate(self.queues[ctx.guild.id]):
-                title = song[1]["title"]
-                list_of_songs.append(f"{count+1}: {title}")
+            main_counter = 1
+            list_of_output_strings = []
+            for count, info in enumerate(self.queues[ctx.guild.id]):
+                title = info[1]
+                list_of_songs.append(f"```yaml\n{count+1}: {title}```")
+                if main_counter == 10:
+                    list_of_output_strings.append('\n'.join(list_of_songs))
+                    list_of_songs.clear()
+                    main_counter = 0
+                main_counter += 1
 
-            output_string = '\n'.join(list_of_songs)
-            await ctx.send(f"```yaml\n{output_string}```")
+            for count, output_string in enumerate(list_of_output_strings):
+                embed = discord.Embed(color=ctx.author.color).add_field(
+                    name=f"Queue for {ctx.guild}", value=f"Page {count+1}")
+                embed.add_field(name=f"`Songs:`",
+                                value=output_string, inline=False)
+                embeds.append(embed)
+            await paginator.run(embeds)
 
     def build_youtube_embed(self, ctx, info):
-        duration = time.strftime("%M:%S", time.gmtime(info["duration"]))
+        duration = info["duration"]
         title = info["title"]
         author_name = ctx.message.author.name if ctx.message else None
         thumbnail = info["thumbnail"]
@@ -163,7 +202,7 @@ class MusicBot(commands.Cog):
             embed.add_field(
                 name=f"`Requested by:`", value=author_name, inline=False)
 
-        next_song = self.queues[ctx.guild.id][1][1]["title"] if ctx.guild.id in self.queues and len(
+        next_song = self.queues[ctx.guild.id][1][1] if ctx.guild.id in self.queues and len(
             self.queues[ctx.guild.id]) != 1 else "Nothing"
 
         embed.add_field(
@@ -188,8 +227,6 @@ class MusicBot(commands.Cog):
 
         await self.join(ctx)
         YDL_OPTIONS = {}
-        FFMPEG_OPTS = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         vc = ctx.voice_client
 
         if vc.is_playing():
@@ -206,15 +243,11 @@ class MusicBot(commands.Cog):
                     url = video_urls[0].watch_url
                     for index in range(1, len(video_urls)):
                         link = video_urls[index].watch_url
-                        info = ydl.extract_info(link, download=False)
-                        url2 = info["formats"][0]["url"]
-                        audio_source = discord.FFmpegPCMAudio(
-                            url2, **FFMPEG_OPTS)
+                        title = video_urls[index].title
                         if ctx.guild.id in self.queues:
-                            self.queues[ctx.guild.id].append(
-                                (audio_source, info))
+                            self.queues[ctx.guild.id].append((link, title))
                         else:
-                            self.queues[ctx.guild.id] = [(audio_source, info)]
+                            self.queues[ctx.guild.id] = [(link, title)]
 
                 elif(not re.match(youtube_video_regex, url)):
                     # Perform search to find video
@@ -253,8 +286,6 @@ class MusicBot(commands.Cog):
         print(f"Queueing {url}")
         await self.join(ctx)
         YDL_OPTIONS = {}
-        FFMPEG_OPTS = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
         vc = ctx.voice_client
 
         with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
@@ -267,15 +298,11 @@ class MusicBot(commands.Cog):
                 video_urls = list(playlist.videos)
                 for index in range(1, len(video_urls)):
                     link = video_urls[index].watch_url
-                    info = ydl.extract_info(link, download=False)
-                    url2 = info["formats"][0]["url"]
-                    audio_source = discord.FFmpegPCMAudio(
-                        url2, **FFMPEG_OPTS)
+                    title = video_urls[index].title
                     if ctx.guild.id in self.queues:
-                        self.queues[ctx.guild.id].append(
-                            (audio_source, info))
+                        self.queues[ctx.guild.id].append((link, title))
                     else:
-                        self.queues[ctx.guild.id] = [(audio_source, info)]
+                        self.queues[ctx.guild.id] = [(link, title)]
                 return
             if(not re.match(song_link_regex, url)):
                 # Perform search to find video
@@ -288,22 +315,13 @@ class MusicBot(commands.Cog):
                 else:
                     url = result[0]["link"]
 
-            info = ydl.extract_info(url, download=False)
-            url2 = info["formats"][0]["url"]
-
-            # Linux
-            audio_source = discord.FFmpegPCMAudio(url2, **FFMPEG_OPTS)
-
-            # WINDOWS
-            # audio_source = discord.FFmpegPCMAudio(
-            # url2, executable="ffmpeg.exe")
-
             guild_id = ctx.guild.id
-
-            self.players[guild_id] = audio_source
+            title = VideosSearch(url, limit=1).result()[
+                "result"][0].title
+            self.players[guild_id] = url
             if guild_id in self.queues:
-                self.queues[guild_id].append((audio_source, info))
+                self.queues[guild_id].append((url, title))
             else:
-                self.queues[guild_id] = [(audio_source, info)]
+                self.queues[guild_id] = [(url, title)]
 
             await ctx.send(f"**Queued** 🎤 `{url}`")
