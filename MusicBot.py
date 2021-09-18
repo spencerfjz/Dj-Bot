@@ -43,7 +43,7 @@ class MusicBot(commands.Cog):
             # TODO: USE EMBED
             await ctx.send("**Queue** is empty")
         else:
-            await ctx. send("**Queue** is cleared!")
+            await ctx. send("💥 **Cleared...** ⏹")
             self.queues.clear()
 
     @commands.command(aliases=["continue", "skip"])
