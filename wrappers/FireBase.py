@@ -37,10 +37,7 @@ class FireBaseContainer:
     def add_text_channel_to_blacklist(self, guild_id, text_channel):
         settings = self.db.collection("settings").document(
             guild_id).get().to_dict()
-
-        text_channel = text_channel.replace("<#", "")
-        text_channel = text_channel.replace(">", "")
-
+        
         if text_channel in settings["blacklist"]:
             return
 
