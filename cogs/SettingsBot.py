@@ -1,4 +1,5 @@
 import discord
+import re
 from discord.ext import commands
 from wrappers.FireBase import FireBaseContainer
 
@@ -25,6 +26,9 @@ class SettingsBot(commands.Cog):
     async def blacklist(self, ctx, arg):
         text_channel = arg.replace("<#", "")
         text_channel = text_channel.replace(">", "")
+        num_regex = r"[0-9]+"
+        if not re.match(num_regex, text_channel):
+            text_channel = "0"
 
         channel = self.client.get_channel(int(text_channel))
         if channel is None:
