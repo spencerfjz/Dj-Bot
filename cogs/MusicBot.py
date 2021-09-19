@@ -192,7 +192,11 @@ class MusicBot(commands.Cog):
                 embed.add_field(name=f"`Songs:`",
                                 value=output_string, inline=False)
                 embeds.append(embed)
-            await paginator.run(embeds)
+            
+            if len(embeds ==1): 
+                await ctx.send(embed = embeds[0])
+            else: 
+                await paginator.run(embeds)
 
     def build_youtube_embed(self, ctx, info):
         duration = info["duration"]
