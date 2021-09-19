@@ -22,9 +22,9 @@ def setup(client):
 class MusicBot(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.current_track = None
         self.queues = {}
         self.players = {}
-        self.next = asyncio.Event()
 
     def check_queue(self, ctx, id):
         if id in self.queues and self.queues[id] != []:
@@ -44,9 +44,11 @@ class MusicBot(commands.Cog):
                 print(f"Playing next song from queue")
 
                 vc = ctx.voice_client
-
+                self.current_track = info
                 vc.play(audio_source, after=lambda event: self.check_queue(
                     ctx, ctx.guild.id))
+        else:
+            self.current_track = None
 
     @commands.command(aliases=["now", "playing"])
     async def current(self, ctx):
@@ -54,8 +56,16 @@ class MusicBot(commands.Cog):
             await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
             return
 
-        # TODO USE EMBED
-        # await ctx.send(embed=ctx.voice_state.current.create_embed())
+        if self.current_track is not None:
+            await ctx.send(embed=self.build_youtube_embed(ctx, self.current_track))
+        else:
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                deescription="invalid_usage_message",
+                colour=discord.Colour.dark_red()
+            )
+            embed.add_field(name="`Error:`", value= "No song currently playing", inline = False)
+            await ctx.send(embed = embed)
 
     @commands.command()
     async def clear(self, ctx):
@@ -280,6 +290,7 @@ class MusicBot(commands.Cog):
                 await ctx.send(embed=embed)
 
                 self.players[ctx.guild.id] = audio_source
+                self.current_track = info
                 vc.play(audio_source, after=lambda event: self.check_queue(
                     ctx, ctx.guild.id))
 
