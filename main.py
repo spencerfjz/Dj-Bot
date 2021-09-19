@@ -64,22 +64,6 @@ async def on_ready():
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Da Tunes 🎵"))
 
 
-@client.event
-async def on_voice_state_update(member, before, after):
-    voice_state = member.guild.voice_client
-
-    if voice_state is None:
-        return
-
-    total_members = 0
-    for member in voice_state.channel.members:
-        if str(member.id) == "877284062954389605" or not member.bot:
-            total_members += 1
-
-    if total_members == 1:
-        print("Leaving empty voice channel.")
-        await voice_state.disconnect()
-
 
 if __name__ == "__main__":
     client.run(DISCORD_TOKEN)

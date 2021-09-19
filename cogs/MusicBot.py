@@ -54,6 +54,23 @@ class MusicBot(commands.Cog):
         else:
             self.current_track = None
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        voice_state = member.guild.voice_client
+
+        if voice_state is None:
+            return
+
+        total_members = 0
+        for member in voice_state.channel.members:
+            if str(member.id) == "877284062954389605" or not member.bot:
+                total_members += 1
+
+        if total_members == 1:
+            print("Leaving empty voice channel.")
+            self.queues.pop(member.guild.id, None)
+            await voice_state.disconnect()
+
     @commands.command(aliases=["now", "playing"])
     async def current(self, ctx):
         if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
