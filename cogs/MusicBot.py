@@ -160,14 +160,25 @@ class MusicBot(commands.Cog):
             title = self.current_track["title"]
             await ctx.send(f"🔎 **Searching lyrics for** `{title}`")
             lyrics = genius_api.search_song(title).lyrics
-            embed = discord.Embed(
-                title=f"**Lyrics for:** `{title}`",
-                deescription="lyrics_message",
-                colour=discord.Colour.green()
-            )
-            embed.add_field(name="``Songs::`",
-                            value=lyrics, inline=False)
-            await ctx.send(embed=embed)
+            paginator = DiscordUtils.Pagination.CustomEmbedPaginator(
+                ctx, remove_reactions=True)
+            paginator.add_reaction('⏮️', "first")
+            paginator.add_reaction('⏪', "back")
+            paginator.add_reaction('⏩', "next")
+            paginator.add_reaction('⏭️', "last")
+            lyrics_list = [lyrics[i:i+600] for i in range(0, len(lyrics), 600)]
+            embeds = []
+            for count, lyrics_set in enumerate(lyrics_list):
+                embed = discord.Embed(color=discord.colour.green()).add_field(
+                    name=f"Lyrics for {title}", value=f"Page {count+1}")
+                embed.add_field(name=f"`Lyrics:`",
+                                value=lyrics_set, inline=False)
+                embeds.append(embed)
+
+            if len(embeds) == 1:
+                await ctx.send(embed=embeds[0])
+            else:
+                await paginator.run(embeds)
 
     @commands.command(aliases=["stop"])
     async def pause(self, ctx):
