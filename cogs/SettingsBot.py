@@ -32,7 +32,7 @@ class SettingsBot(commands.Cog):
     async def prefix(self, ctx, prefix):
         guild_id = str(ctx.guild.id)
         FireBase.update_prefix(guild_id, prefix)
-        await ctx.send(f"👍 **Prefix set to {prefix}**")
+        await ctx.send(f"👍 **Prefix set to** `{prefix}`")
 
     @commands.command()
     async def blacklist(self, ctx, arg):
