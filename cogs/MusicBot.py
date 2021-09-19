@@ -190,7 +190,7 @@ class MusicBot(commands.Cog):
 
             lyrics = song_search.lyrics
             paginator = DiscordUtils.Pagination.CustomEmbedPaginator(
-                ctx, remove_reactions=True)
+                ctx, remove_reactions=True, timeout=600)
             paginator.add_reaction('⏮️', "first")
             paginator.add_reaction('⏪', "back")
             paginator.add_reaction('⏩', "next")
@@ -242,7 +242,7 @@ class MusicBot(commands.Cog):
             await ctx.send("**Queue** is empty 🗍")
         else:
             paginator = DiscordUtils.Pagination.CustomEmbedPaginator(
-                ctx, remove_reactions=True)
+                ctx, remove_reactions=True, timeout=600)
             paginator.add_reaction('⏮️', "first")
             paginator.add_reaction('⏪', "back")
             paginator.add_reaction('⏩', "next")
