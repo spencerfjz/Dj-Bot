@@ -16,6 +16,12 @@ class SettingsBot(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
+        if len(guild.text_channels) > 0:
+            channel = self.client.get_channel(guild.text_channels[0].id)
+            await channel.send("**Thank you for adding me!** ✅")
+            await channel.send("`-` My prefix here is `-`")
+            await channel.send("`-` You can change my prefix with `-prefix <prefix>`")
+
         FireBase.add_new_server(str(guild.id))
 
     @commands.Cog.listener()

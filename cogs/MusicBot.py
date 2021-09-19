@@ -90,7 +90,7 @@ class MusicBot(commands.Cog):
         elif ctx.voice_client.is_playing():
             ctx.voice_client.stop()
         else:
-            await ctx.send(f"Queue is **EMPTY**")
+            await ctx.send("❌ **Nothing playing in this server**")
 
     @commands.command(aliases=["summon"])
     async def join(self, ctx):
