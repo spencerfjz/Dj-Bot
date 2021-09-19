@@ -64,6 +64,5 @@ async def on_ready():
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Da Tunes 🎵"))
 
 
-
 if __name__ == "__main__":
     client.run(DISCORD_TOKEN)

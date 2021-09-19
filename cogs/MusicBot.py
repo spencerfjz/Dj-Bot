@@ -42,7 +42,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                #     url2, executable="ffmpeg.exe")
+                # url2, executable="ffmpeg.exe")
 
                 self.players[id] = audio_source
                 print(f"Playing next song from queue")
@@ -101,6 +101,44 @@ class MusicBot(commands.Cog):
         else:
             await ctx. send("💥 **Cleared...** ⏹")
             self.queues.clear()
+
+    def is_valid_index(self, ctx, ind):
+        if ind < 0 or ind >= len(self.queues[ctx.guild.id]):
+            return False
+        else:
+            return True
+
+    @commands.command()
+    async def skipto(self, ctx, position=None):
+        guild_prefix = FireBase.retrieve_prefix(str(ctx.guild.id))
+        if position == None or not position.isdigit():
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=f"{guild_prefix}skipto [Position]",
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
+        elif ctx.guild.id not in self.queues or len(self.queues[ctx.guild.id]) == 0:
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=f"Queue is empty",
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
+        elif not self.is_valid_index(ctx, int(position)-1):
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=f"Invalid position given",
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
+        else:
+            position = int(position)
+            result = self.queues[ctx.guild.id][position -
+                                               1:len(self.queues[ctx.guild.id])]
+            self.queues.pop(ctx.guild.id, None)
+            self.queues[ctx.guild.id] = result
+            await self.next(ctx)
 
     @commands.command(aliases=["continue", "skip", "fs"])
     async def next(self, ctx):
@@ -264,7 +302,7 @@ class MusicBot(commands.Cog):
                 embed = discord.Embed(color=ctx.author.color).add_field(
                     name=f"Queue for {ctx.guild}", value=f"Page 1")
                 embed.add_field(name=f"`Songs:`",
-                                value=''.join(list_of_songs), inline=False)
+                                value=''.join(list_of_output_strings), inline=False)
                 await ctx.send(embed=embed)
             else:
                 for count, output_string in enumerate(list_of_output_strings):
@@ -370,7 +408,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                #     url2, executable="ffmpeg.exe")
+                # url2, executable="ffmpeg.exe")
 
                 print(f"Playing {url}")
 
