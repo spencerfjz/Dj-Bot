@@ -226,7 +226,7 @@ class MusicBot(commands.Cog):
                     main_counter = 0
                 main_counter += 1
 
-            if list_of_output_strings == 1:
+            if len(list_of_output_strings) == 1:
                 embed = discord.Embed(color=ctx.author.color).add_field(
                     name=f"Queue for {ctx.guild}", value=f"Page 1")
                 embed.add_field(name=f"`Songs:`",
