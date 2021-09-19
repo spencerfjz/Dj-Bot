@@ -157,8 +157,8 @@ class MusicBot(commands.Cog):
                             value="No song currently playing", inline=False)
             await ctx.send(embed=embed)
         else:
-            await ctx.send(f"🔎 **Searching lyrics for** `{title}`")
             title = self.current_track["title"]
+            await ctx.send(f"🔎 **Searching lyrics for** `{title}`")
             lyrics = genius_api.search_song(title).lyrics
             embed = discord.Embed(
                 title=f"**Lyrics for:** `{title}`",
