@@ -206,9 +206,14 @@ class MusicBot(commands.Cog):
         if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
             await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
             return
-
-        ctx.voice_client.resume()
-        await ctx.send("⏯️ **Resuming** 👍")
+        elif ctx.author.voice is None:
+            await ctx.send(f"You must be in voice channel! {ctx.author.mention}")
+        elif ctx.voice_client is None:
+            guild_prefix = FireBase.retrieve_prefix(str(ctx.guild.id))
+            await ctx.send(f"❌ **I am not connected to a voice channel.** Type `{guild_prefix}join` to get me in one")
+        else:
+            ctx.voice_client.resume()
+            await ctx.send("⏯️ **Resuming** 👍")
 
     @commands.command(aliases=["queue"])
     async def chain(self, ctx):
