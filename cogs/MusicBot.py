@@ -1,6 +1,7 @@
 import re
 import random
 import time
+import os
 from sys import executable
 from youtubesearchpython import VideosSearch
 import discord
@@ -10,6 +11,9 @@ from pytube import YouTube, Playlist
 import youtube_dl
 from cogs.SettingsBot import FireBase
 import DiscordUtils
+import lyricsgenius as lg
+
+genius_api = lg.Genius(os.environ.get("GENIUS_KEY"))
 
 FFMPEG_OPTS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
@@ -64,8 +68,9 @@ class MusicBot(commands.Cog):
                 deescription="invalid_usage_message",
                 colour=discord.Colour.dark_red()
             )
-            embed.add_field(name="`Error:`", value= "No song currently playing", inline = False)
-            await ctx.send(embed = embed)
+            embed.add_field(name="`Error:`",
+                            value="No song currently playing", inline=False)
+            await ctx.send(embed=embed)
 
     @commands.command()
     async def clear(self, ctx):
@@ -140,6 +145,30 @@ class MusicBot(commands.Cog):
         else:
             await ctx.send(f"Queue is **EMPTY**")
 
+    @commands.command()
+    async def lyrics(self, ctx):
+        if self.current_track is None:
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                deescription="invalid_usage_message",
+                colour=discord.Colour.dark_red()
+            )
+            embed.add_field(name="`Error:`",
+                            value="No song currently playing", inline=False)
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"🔎 **Searching lyrics for** `{title}`")
+            title = self.current_track["title"]
+            lyrics = genius_api.search_song(title).lyrics
+            embed = discord.Embed(
+                title=f"**Lyrics for:** `{title}`",
+                deescription="lyrics_message",
+                colour=discord.Colour.green()
+            )
+            embed.add_field(name="``Songs::`",
+                            value=lyrics, inline=False)
+            await ctx.send(embed=embed)
+
     @commands.command(aliases=["stop"])
     async def pause(self, ctx):
         if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
@@ -192,10 +221,10 @@ class MusicBot(commands.Cog):
                 embed.add_field(name=f"`Songs:`",
                                 value=output_string, inline=False)
                 embeds.append(embed)
-            
-            if len(embeds ==1): 
-                await ctx.send(embed = embeds[0])
-            else: 
+
+            if len(embeds) == 1:
+                await ctx.send(embed=embeds[0])
+            else:
                 await paginator.run(embeds)
 
     def build_youtube_embed(self, ctx, info):
