@@ -230,7 +230,7 @@ class MusicBot(commands.Cog):
 
         return embed
 
-    @commands.command(aliases=["add", "playnext"])
+    @commands.command(aliases=["add", "playnext", "p"])
     async def play(self, ctx, *, url):
         if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
             await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
