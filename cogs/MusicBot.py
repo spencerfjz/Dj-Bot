@@ -159,7 +159,19 @@ class MusicBot(commands.Cog):
         else:
             title = self.current_track["title"]
             await ctx.send(f"🔎 **Searching lyrics for** `{title}`")
-            lyrics = genius_api.search_song(title).lyrics
+            song_search = genius_api.search_song(title)
+            if song_search is None:
+                embed = discord.Embed(
+                    title=f"😥 **Lyrics Not Found**",
+                    deescription="lyrics_not_found_message",
+                    colour=discord.Colour.dark_red()
+                )
+                embed.add_field(name="`Error:`",
+                                value=f"No lyrics found for {title}", inline=False)
+                await ctx.send(embed=embed)
+                return
+            
+            lyrics = song_search.lyrics
             paginator = DiscordUtils.Pagination.CustomEmbedPaginator(
                 ctx, remove_reactions=True)
             paginator.add_reaction('⏮️', "first")
