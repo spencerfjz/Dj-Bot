@@ -29,10 +29,19 @@ class SettingsBot(commands.Cog):
         FireBase.remove_server(str(guild.id))
 
     @commands.command()
-    async def prefix(self, ctx, prefix):
-        guild_id = str(ctx.guild.id)
-        FireBase.update_prefix(guild_id, prefix)
-        await ctx.send(f"👍 **Prefix set to** `{prefix}`")
+    async def prefix(self, ctx, prefix=None):
+        if prefix is None or len(prefix) > 5:
+            error_message = "No prefix given!" if prefix is None else "Prefix must be at most 5 characters (e.g. !)"
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=error_message,
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
+        else:
+            guild_id = str(ctx.guild.id)
+            FireBase.update_prefix(guild_id, prefix)
+            await ctx.send(f"👍 **Prefix set to** `{prefix}`")
 
     @commands.command()
     async def blacklist(self, ctx, arg):
@@ -58,7 +67,44 @@ class SettingsBot(commands.Cog):
         FireBase.add_new_server(str(ctx.guild.id))
         embed = discord.Embed(
             title=f"♻️ Reset settings for **{ctx.guild}**",
-            deescription="reset_message",
             colour=discord.Colour.dark_gray()
         )
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def settings(self, ctx, arg=None):
+        guild_prefix = FireBase.retrieve_prefix(str(ctx.guild.id))
+        # Settings Message Case
+        if arg is None:
+            embed = discord.Embed(
+                title="**Bootleg Rhythm Settings**",
+                description=f"Use the command format `{guild_prefix}settings <option>` to view more info about an option.",
+                color=0x000000
+            )
+            embed.add_field(
+                name="❗ **Prefix**", value=f"`{guild_prefix}settings prefix`", inline=True)
+
+            embed.add_field(
+                name="🚫 **Blacklist**", value=f"`{guild_prefix}settings blacklist`", inline=True)
+
+            embed.add_field(
+                name="♻️ **Reset**", value=f"`{guild_prefix}settings reset`", inline=True)
+
+            await ctx.send(embed=embed)
+        elif arg == "prefix":
+            embed = discord.Embed(
+                title="**Bootleg Rhythm Settings -** ❗ **Prefix**",
+                description="Changes the prefix used to address Bootleg Rhythm bot.",
+                color=0x000000
+            )
+
+            embed.add_field(name="📄 **Current Setting:**",
+                            value=f"`{guild_prefix}`", inline=False)
+
+            embed.add_field(
+                name="✏️ **Update:**", value=f"`{guild_prefix}settings [New Prefix]`", inline=False)
+
+            embed.add_field(name="✅ **Valid Settings:**",
+                            value="`Any text, at most 5 characters (e.g. !)`", inline=False)
+
+            await ctx.send(embed=embed)

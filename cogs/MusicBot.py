@@ -99,7 +99,7 @@ class MusicBot(commands.Cog):
                 "title": result["title"],
                 "thumbnail": result["thumbnails"][0]["url"],
             }
-            await ctx.send("⏩ **Skipped** 👍")
+            await ctx.send("⏩ ***Skipped*** 👍")
             await ctx.send(embed=self.build_youtube_embed(ctx, info))
             ctx.voice_client.stop()
         elif ctx.voice_client.is_playing():
@@ -170,7 +170,7 @@ class MusicBot(commands.Cog):
                                 value=f"No lyrics found for {title}", inline=False)
                 await ctx.send(embed=embed)
                 return
-            
+
             lyrics = song_search.lyrics
             paginator = DiscordUtils.Pagination.CustomEmbedPaginator(
                 ctx, remove_reactions=True)
@@ -208,7 +208,7 @@ class MusicBot(commands.Cog):
             return
 
         ctx.voice_client.resume()
-        await ctx.send("**Resumed**!")
+        await ctx.send("⏯️ **Resuming** 👍")
 
     @commands.command(aliases=["queue"])
     async def chain(self, ctx):
@@ -282,7 +282,7 @@ class MusicBot(commands.Cog):
 
     def build_blacklist_embed(self, channel_name):
         embed = discord.Embed(
-            title=f"❌ **{channel_name}** is blacklisted.",
+            title=f"🚫 **{channel_name}** is blacklisted.",
             deescription="blacklist_message",
             colour=discord.Colour.dark_red()
         )
