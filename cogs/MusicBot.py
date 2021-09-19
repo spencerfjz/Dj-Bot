@@ -42,7 +42,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                #     url2, executable="ffmpeg.exe")
+                # url2, executable="ffmpeg.exe")
 
                 self.players[id] = audio_source
                 print(f"Playing next song from queue")
@@ -226,11 +226,11 @@ class MusicBot(commands.Cog):
                     main_counter = 0
                 main_counter += 1
 
-            if len(list_of_output_strings) == 1:
+            if len(list_of_output_strings) <= 1:
                 embed = discord.Embed(color=ctx.author.color).add_field(
                     name=f"Queue for {ctx.guild}", value=f"Page 1")
                 embed.add_field(name=f"`Songs:`",
-                                value=list_of_songs, inline=False)
+                                value=''.join(list_of_songs), inline=False)
                 await ctx.send(embed=embed)
             else:
                 for count, output_string in enumerate(list_of_output_strings):
@@ -327,7 +327,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                #     url2, executable="ffmpeg.exe")
+                # url2, executable="ffmpeg.exe")
 
                 print(f"Playing {url}")
 
