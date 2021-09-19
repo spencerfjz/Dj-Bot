@@ -44,22 +44,30 @@ class SettingsBot(commands.Cog):
             await ctx.send(f"👍 **Prefix set to** `{prefix}`")
 
     @commands.command()
-    async def blacklist(self, ctx, arg):
-        text_channel = arg.replace("<#", "")
-        text_channel = text_channel.replace(">", "")
-        num_regex = r"[0-9]+"
-        if not re.match(num_regex, text_channel):
-            text_channel = "0"
-
-        channel = self.client.get_channel(int(text_channel))
-        if channel is None:
-            await ctx.send(f"Invalid channel mention given, use the following format `-blacklist <channel_id>`")
-        elif FireBase.is_in_blacklist(str(ctx.guild.id), str(channel.id)):
-            await ctx.send(f"`{channel.name}` is already in the blacklist")
+    async def blacklist(self, ctx, arg=None):
+        if arg is None:
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description="Must mention a text channel!",
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
         else:
-            FireBase.add_text_channel_to_blacklist(
-                str(ctx.guild.id), str(channel.id))
-            await ctx.send(f"Blacklisted `{channel.name}`")
+            text_channel = arg.replace("<#", "")
+            text_channel = text_channel.replace(">", "")
+            num_regex = r"[0-9]+"
+            if not re.match(num_regex, text_channel):
+                text_channel = "0"
+
+            channel = self.client.get_channel(int(text_channel))
+            if channel is None:
+                await ctx.send(f"Invalid channel mention given, use the following format `-blacklist <channel_id>`")
+            elif FireBase.is_in_blacklist(str(ctx.guild.id), str(channel.id)):
+                await ctx.send(f"`{channel.name}` is already in the blacklist")
+            else:
+                FireBase.add_text_channel_to_blacklist(
+                    str(ctx.guild.id), str(channel.id))
+                await ctx.send(f"Blacklisted `{channel.name}`")
 
     @commands.command()
     async def reset(self, ctx):
@@ -93,7 +101,7 @@ class SettingsBot(commands.Cog):
             await ctx.send(embed=embed)
         elif arg == "prefix":
             embed = discord.Embed(
-                title="**Bootleg Rhythm Settings -** ❗ **Prefix**",
+                title="**Bootleg Rhythm Settings -** ❗**Prefix**",
                 description="Changes the prefix used to address Bootleg Rhythm bot.",
                 color=0x000000
             )
@@ -102,9 +110,32 @@ class SettingsBot(commands.Cog):
                             value=f"`{guild_prefix}`", inline=False)
 
             embed.add_field(
-                name="✏️ **Update:**", value=f"`{guild_prefix}settings [New Prefix]`", inline=False)
+                name="✏️ **Update:**", value=f"`{guild_prefix}prefix [New Prefix]`", inline=False)
 
             embed.add_field(name="✅ **Valid Settings:**",
                             value="`Any text, at most 5 characters (e.g. !)`", inline=False)
 
+            await ctx.send(embed=embed)
+
+        elif arg == "blacklist":
+            embed = discord.Embed(
+                title="**Bootleg Rhythm Settings - ** 🚫 **Blacklist**",
+                description="Prevents a text channel from using dj commands.",
+                color=0x000000
+            )
+
+            embed.add_field(
+                name="✏️ **Update:**", value=f"`{guild_prefix}blacklist #channel_name`", inline=False)
+
+            embed.add_field(name="✅ **Valid Settings:**",
+                            value="`Must mention a text channel`", inline=False)
+
+            await ctx.send(embed=embed)
+
+        elif arg == "reset":
+            embed = discord.Embed(
+                title="**Bootleg Rhythm Settings - ** ♻️ **Reset**",
+                description="Resets server settings back to default (e.g. reset blacklist & prefix)",
+                color=0x000000
+            )
             await ctx.send(embed=embed)

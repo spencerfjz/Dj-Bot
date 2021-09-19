@@ -290,9 +290,18 @@ class MusicBot(commands.Cog):
         return embed
 
     @commands.command(aliases=["add", "playnext", "p"])
-    async def play(self, ctx, *, url):
+    async def play(self, ctx, *, url=None):
         if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
             await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+        elif url is None:
+            guild_prefix = FireBase.retrieve_prefix(str(ctx.guild.id))
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=f"{guild_prefix}play [Link or query]",
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
             return
 
         await self.join(ctx)
