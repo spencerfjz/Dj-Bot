@@ -169,7 +169,7 @@ class MusicBot(commands.Cog):
             lyrics_list = [lyrics[i:i+600] for i in range(0, len(lyrics), 600)]
             embeds = []
             for count, lyrics_set in enumerate(lyrics_list):
-                embed = discord.Embed(color=discord.colour.green()).add_field(
+                embed = discord.Embed(color=discord.Colour.green()).add_field(
                     name=f"Lyrics for {title}", value=f"Page {count+1}")
                 embed.add_field(name=f"`Lyrics:`",
                                 value=lyrics_set, inline=False)
