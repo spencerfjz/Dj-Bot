@@ -270,7 +270,7 @@ class MusicBot(commands.Cog):
             ctx.voice_client.resume()
             await ctx.send("⏯️ **Resuming** 👍")
 
-    @commands.command(aliases=["queue"])
+    @commands.command(aliases=["queue", "q"])
     async def chain(self, ctx):
         if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
             await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
