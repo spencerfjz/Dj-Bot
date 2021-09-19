@@ -226,16 +226,19 @@ class MusicBot(commands.Cog):
                     main_counter = 0
                 main_counter += 1
 
-            for count, output_string in enumerate(list_of_output_strings):
+            if list_of_output_strings == 1:
                 embed = discord.Embed(color=ctx.author.color).add_field(
-                    name=f"Queue for {ctx.guild}", value=f"Page {count+1}")
+                    name=f"Queue for {ctx.guild}", value=f"Page 1")
                 embed.add_field(name=f"`Songs:`",
-                                value=output_string, inline=False)
-                embeds.append(embed)
-
-            if len(embeds) == 1:
-                await ctx.send(embed=embeds[0])
+                                value=list_of_songs, inline=False)
+                await ctx.send(embed=embed)
             else:
+                for count, output_string in enumerate(list_of_output_strings):
+                    embed = discord.Embed(color=ctx.author.color).add_field(
+                        name=f"Queue for {ctx.guild}", value=f"Page {count+1}")
+                    embed.add_field(name=f"`Songs:`",
+                                    value=output_string, inline=False)
+                    embeds.append(embed)
                 await paginator.run(embeds)
 
     def build_youtube_embed(self, ctx, info):
