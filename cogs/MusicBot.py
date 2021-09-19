@@ -26,7 +26,7 @@ def setup(client):
 class MusicBot(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.current_track = None
+        self.current_track = {}
         self.queues = {}
         self.players = {}
 
@@ -42,17 +42,17 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                # url2, executable="ffmpeg.exe")
+                #     url2, executable="ffmpeg.exe")
 
                 self.players[id] = audio_source
                 print(f"Playing next song from queue")
 
                 vc = ctx.voice_client
-                self.current_track = info
+                self.current_track[ctx.guild.id] = info
                 vc.play(audio_source, after=lambda event: self.check_queue(
                     ctx, ctx.guild.id))
         else:
-            self.current_track = None
+            self.current_track.pop(ctx.guild.id, None)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -77,8 +77,8 @@ class MusicBot(commands.Cog):
             await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
             return
 
-        if self.current_track is not None:
-            await ctx.send(embed=self.build_youtube_embed(ctx, self.current_track))
+        if ctx.guild.id in self.current_track:
+            await ctx.send(embed=self.build_youtube_embed(ctx, self.current_track[ctx.guild.id]))
         else:
             embed = discord.Embed(
                 title=f"❌ **Invalid usage**",
@@ -164,7 +164,7 @@ class MusicBot(commands.Cog):
 
     @commands.command()
     async def lyrics(self, ctx):
-        if self.current_track is None:
+        if ctx.guild.id not in self.current_track:
             embed = discord.Embed(
                 title=f"❌ **Invalid usage**",
                 deescription="invalid_usage_message",
@@ -174,7 +174,7 @@ class MusicBot(commands.Cog):
                             value="No song currently playing", inline=False)
             await ctx.send(embed=embed)
         else:
-            title = self.current_track["title"]
+            title = self.current_track[ctx.guild.id]["title"]
             await ctx.send(f"🔎 **Searching lyrics for** `{title}`")
             song_search = genius_api.search_song(title)
             if song_search is None:
@@ -295,7 +295,7 @@ class MusicBot(commands.Cog):
                 name=f"`Requested by:`", value=author_name, inline=False)
 
         next_song = self.queues[ctx.guild.id][1][1] if ctx.guild.id in self.queues and len(
-            self.queues[ctx.guild.id]) != 1 else "Nothing"
+            self.queues[ctx.guild.id]) > 1 else "Nothing"
 
         embed.add_field(
             name=f"`Up Next:`", value=next_song, inline=False)
@@ -370,7 +370,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                # url2, executable="ffmpeg.exe")
+                #     url2, executable="ffmpeg.exe")
 
                 print(f"Playing {url}")
 
@@ -380,7 +380,7 @@ class MusicBot(commands.Cog):
                 await ctx.send(embed=embed)
 
                 self.players[ctx.guild.id] = audio_source
-                self.current_track = info
+                self.current_track[ctx.guild.id] = info
                 vc.play(audio_source, after=lambda event: self.check_queue(
                     ctx, ctx.guild.id))
 
