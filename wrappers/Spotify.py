@@ -1,13 +1,11 @@
-import json
 import os
 # Spotify library.
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 # URL conversions.
 import urllib.request
-import bs4
-# Youtube stuff.
-import youtube
+import urllib.parse
+import re
 
 APIs = {
     "spotify": {
@@ -68,21 +66,19 @@ def searchYoutubeAlternative(songName):
 
 
 def searchYoutube(songName):
-    api = youtube.API(client_id=APIs["youtube"]["client_id"],
-                      client_secret=APIs["youtube"]["client_secret"],
-                      api_key=APIs["youtube"]["api_key"])
-    video = api.get('search', q=songName, maxResults=1,
-                    type='video', order='relevance')
-    return("https://www.youtube.com/watch?v="+video["items"][0]["id"]["videoId"])
+    html = urllib.request.urlopen(
+        f"https://www.youtube.com/results?search_query={songName}")
+
+    video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
+    if(len(video_ids) == 0):
+        return
+    else:
+        return f"https://www.youtube.com/watch?v={video_ids[0]}"
 
 
 def getYoutubeLinksFromPlaylist(playlist):
     tracks = getTracks(playlist)
-    print("Searching songs...")
     songs = []
     for i in tracks:
-        songs.append(searchYoutube(i))
-    print("Search finished!")
-
-    print("URL LIST: ")
+        songs.append((searchYoutube(urllib.parse.quote_plus(i)), i))
     return songs

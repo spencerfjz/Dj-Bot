@@ -64,7 +64,7 @@ class MusicBot(commands.Cog):
 
         total_members = 0
         for member in voice_state.channel.members:
-            if str(member.id) == "877284062954389605" or not member.bot:
+            if str(member.id) == str(self.client.user.id) or not member.bot:
                 total_members += 1
 
         if total_members == 1:
@@ -385,6 +385,15 @@ class MusicBot(commands.Cog):
 
         return embed
 
+    def queueSpotify(self, ctx,  result):
+        for index in range(1, len(result)):
+            if ctx.guild.id in self.queues:
+                self.queues[ctx.guild.id].append(
+                    (result[index][0], result[index][1]))
+            else:
+                self.queues[ctx.guild.id] = [
+                    (result[index][0], result[index][1])]
+
     @commands.command(aliases=["add", "playnext", "p"])
     async def play(self, ctx, *, url=None):
         if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
@@ -411,18 +420,14 @@ class MusicBot(commands.Cog):
                 youtube_video_regex = r"^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$"
                 youtube_playlist_regex = r"^.*(youtu.be\/|list=)([^#\&\?]*).*"
                 playlist_regex = r"^(https:\/\/open.spotify.com\/playlist\/)([a-zA-Z0-9]+)(.*)$"
+
                 await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
                 if (re.match(playlist_regex, url)):
                     try:
                         result = Spotify.getYoutubeLinksFromPlaylist(url)
-                        url = result[0]
-                        for index in range(1, len(result)):
-                            if ctx.guild.id in self.queues:
-                                self.queues[ctx.guild.id].append(
-                                    (result[index], result[index]))
-                            else:
-                                self.queues[ctx.guild.id] = [
-                                    (result[index], result[index])]
+                        url = result[0][0]
+                        self.queueSpotify(ctx, result)
+
                     except Exception as ex:
                         print(ex)
                         print("No videos found when searching")
@@ -466,8 +471,9 @@ class MusicBot(commands.Cog):
                 print(f"Playing {url}")
 
                 embed = self.build_youtube_embed(ctx, info)
+                title = info["title"]
 
-                await ctx.send(f"**Playing** 🎶 `{url} - Now!`")
+                await ctx.send(f"**Playing** 🎶 `{title} - Now!`")
                 await ctx.send(embed=embed)
 
                 self.players[ctx.guild.id] = audio_source
@@ -484,8 +490,20 @@ class MusicBot(commands.Cog):
         with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
             song_link_regex = r"^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$"
             youtube_playlist_regex = r"^.*(youtu.be\/|list=)([^#\&\?]*).*"
+            playlist_regex = r"^(https:\/\/open.spotify.com\/playlist\/)([a-zA-Z0-9]+)(.*)$"
             await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
-            if(re.match(youtube_playlist_regex, url)):
+
+            if(re.match(playlist_regex, url)):
+                try:
+                    result = Spotify.getYoutubeLinksFromPlaylist(url)
+                    self.queueSpotify(ctx, result)
+                    await ctx.send(f"**Queued** 🎤 `{url}`")
+                except Exception as ex:
+                    print(ex)
+                    print("No videos found when searching")
+                    await ctx.send(f"❌ could not find {url}")
+                return
+            elif(re.match(youtube_playlist_regex, url)):
                 await ctx.send(f"**Queued** 🎤 `{url}`")
                 playlist = Playlist(url)
                 video_urls = list(playlist.videos)
@@ -497,7 +515,7 @@ class MusicBot(commands.Cog):
                     else:
                         self.queues[ctx.guild.id] = [(link, title)]
                 return
-            if(not re.match(song_link_regex, url)):
+            elif(not re.match(song_link_regex, url)):
                 # Perform search to find video
                 videoSearch = VideosSearch(url, limit=1)
                 result = videoSearch.result()["result"]
