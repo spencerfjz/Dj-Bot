@@ -1,5 +1,6 @@
 import re
 import random
+import wrappers.Spotify as Spotify
 import time
 import os
 from sys import executable
@@ -409,8 +410,25 @@ class MusicBot(commands.Cog):
             with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
                 youtube_video_regex = r"^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$"
                 youtube_playlist_regex = r"^.*(youtu.be\/|list=)([^#\&\?]*).*"
+                playlist_regex = r"^(https:\/\/open.spotify.com\/playlist\/)([a-zA-Z0-9]+)(.*)$"
                 await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
-                if(re.match(youtube_playlist_regex, url)):
+                if (re.match(playlist_regex, url)):
+                    try:
+                        result = Spotify.getYoutubeLinksFromPlaylist(url)
+                        url = result[0]
+                        for index in range(1, len(result)):
+                            if ctx.guild.id in self.queues:
+                                self.queues[ctx.guild.id].append(
+                                    (result[index], result[index]))
+                            else:
+                                self.queues[ctx.guild.id] = [
+                                    (result[index], result[index])]
+                    except Exception as ex:
+                        print(ex)
+                        print("No videos found when searching")
+                        await ctx.send(f"❌ could not find {url}")
+                        return
+                elif(re.match(youtube_playlist_regex, url)):
                     playlist = Playlist(url)
                     video_urls = list(playlist.videos)
                     print(f"{len(video_urls)} items in playlist")
