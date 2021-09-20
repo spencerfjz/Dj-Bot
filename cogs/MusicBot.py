@@ -42,7 +42,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                # url2, executable="ffmpeg.exe")
+                    # url2, executable="ffmpeg.exe")
 
                 self.players[id] = audio_source
                 print(f"Playing next song from queue")
@@ -296,7 +296,7 @@ class MusicBot(commands.Cog):
             )
             await ctx.send(embed=embed)
         else:
-            title = self.queue[ctx.guild.id].pop(int(position)-1)[1]
+            title = self.queues[ctx.guild.id].pop(int(position)-1)[1]
             await ctx.send(f"✅ **Removed** `{title}`")
 
     @commands.command(aliases=["queue", "q"])
@@ -443,7 +443,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                # url2, executable="ffmpeg.exe")
+                    # url2, executable="ffmpeg.exe")
 
                 print(f"Playing {url}")
 
