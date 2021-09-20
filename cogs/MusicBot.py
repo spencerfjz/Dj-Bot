@@ -42,7 +42,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                    # url2, executable="ffmpeg.exe")
+                # url2, executable="ffmpeg.exe")
 
                 self.players[id] = audio_source
                 print(f"Playing next song from queue")
@@ -270,6 +270,35 @@ class MusicBot(commands.Cog):
             ctx.voice_client.resume()
             await ctx.send("⏯️ **Resuming** 👍")
 
+    @commands.command(aliases=["r"])
+    async def remove(self, ctx, position=None):
+        guild_prefix = FireBase.retrieve_prefix(str(ctx.guild.id))
+        if position is None or not position.isdigit():
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=f"{guild_prefix}remove [Index]",
+                colour=discord.Colour.dark_red()
+            )
+            embed.add_field(name="Example", value=f"`{guild_prefix}remove 1`")
+            await ctx.send(embed=embed)
+        elif ctx.guild.id not in self.queues or len(self.queues[ctx.guild.id]) == 0:
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=f"Queue is empty",
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
+        elif not self.is_valid_index(ctx, int(position)-1):
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=f"Invalid position given",
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
+        else:
+            title = self.queue[ctx.guild.id].pop(int(position)-1)[1]
+            await ctx.send(f"✅ **Removed** `{title}`")
+
     @commands.command(aliases=["queue", "q"])
     async def chain(self, ctx):
         if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
@@ -414,7 +443,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                    # url2, executable="ffmpeg.exe")
+                # url2, executable="ffmpeg.exe")
 
                 print(f"Playing {url}")
 
