@@ -29,10 +29,14 @@ def getTracks(playlistURL):
 
     # Getting a playlist.
     results = spotify.user_playlist_tracks(user="", playlist_id=playlistURL)
+    items = results["items"]
+    while results["next"] is not None:
+        results = spotify.next(results)
+        items += results["items"]
 
     trackList = []
     # For each track in the playlist.
-    for i in results["items"]:
+    for i in items:
         # In case there's only one artist.
         if (i["track"]["artists"].__len__() == 1):
             # We add trackName - artist.

@@ -333,36 +333,23 @@ class MusicBot(commands.Cog):
             paginator.add_reaction('⏭️', "last")
             embeds = []
             list_of_songs = []
-            main_counter = 1
-            list_of_output_strings = []
             for count, info in enumerate(self.queues[ctx.guild.id]):
                 title = info[1]
                 list_of_songs.append(f"```yaml\n{count+1}: {title}```")
-                if main_counter == 10:
-                    list_of_output_strings.append('\n'.join(list_of_songs))
-                    list_of_songs.clear()
-                    main_counter = 0
-                main_counter += 1
 
-            if len(list_of_output_strings) == 0:
+            songs_list = [list_of_songs[i:i+10]
+                          for i in range(0, len(list_of_songs), 10)]
+
+            for count, s_list in enumerate(songs_list):
                 embed = discord.Embed(color=ctx.author.color).add_field(
-                    name=f"Queue for {ctx.guild}", value=f"Page 1")
+                    name=f"Queue for {ctx.guild}", value=f"Page {count+1}")
                 embed.add_field(name=f"`Songs:`",
-                                value="".join(list_of_songs), inline=False)
-                await ctx.send(embed=embed)
-            elif len(list_of_output_strings) <= 1:
-                embed = discord.Embed(color=ctx.author.color).add_field(
-                    name=f"Queue for {ctx.guild}", value=f"Page 1")
-                embed.add_field(name=f"`Songs:`",
-                                value=''.join(list_of_output_strings), inline=False)
-                await ctx.send(embed=embed)
+                                value="".join(s_list), inline=False)
+                embeds.append(embed)
+
+            if len(embeds) == 1:
+                await ctx.send(embed=embeds[0])
             else:
-                for count, output_string in enumerate(list_of_output_strings):
-                    embed = discord.Embed(color=ctx.author.color).add_field(
-                        name=f"Queue for {ctx.guild}", value=f"Page {count+1}")
-                    embed.add_field(name=f"`Songs:`",
-                                    value=output_string, inline=False)
-                    embeds.append(embed)
                 await paginator.run(embeds)
 
     def build_youtube_embed(self, ctx, info):
