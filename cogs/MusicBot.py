@@ -17,7 +17,7 @@ import lyricsgenius as lg
 
 
 genius_api = lg.Genius(os.environ.get("GENIUS_KEY"), skip_non_songs=True, excluded_terms=[
-                       "(Remix)", "(Live)"], remove_section_headers=True)
+                       "(Remix)", "(Live)"], remove_section_headers=False)
 
 FFMPEG_OPTS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
