@@ -4,6 +4,7 @@ import wrappers.Spotify as Spotify
 import time
 import os
 from sys import executable
+import constants
 from youtubesearchpython import VideosSearch
 import discord
 import asyncio
@@ -15,7 +16,8 @@ import DiscordUtils
 import lyricsgenius as lg
 
 
-genius_api = lg.Genius(os.environ.get("GENIUS_KEY"), skip_non_songs=True, excluded_terms=["(Remix)", "(Live)"], remove_section_headers=True)
+genius_api = lg.Genius(os.environ.get("GENIUS_KEY"), skip_non_songs=True, excluded_terms=[
+                       "(Remix)", "(Live)"], remove_section_headers=True)
 
 FFMPEG_OPTS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
@@ -34,7 +36,16 @@ class MusicBot(commands.Cog):
 
     def check_queue(self, ctx, id):
         if id in self.queues and self.queues[id] != []:
-            player = self.queues[id].pop(0)[0]
+            queue_item = self.queues[id].pop(0)
+            player = queue_item[0]
+
+            if player == constants.SPOTIFY_PLAYLIST_ITEM:
+                videoSearch = VideosSearch(queue_item[1], limit=1)
+                result = videoSearch.result()["result"]
+                if(len(result) == 0):
+                    self.check_queue(ctx, ctx.guild.id)
+                else:
+                    player = result[0]["link"]
 
             with youtube_dl.YoutubeDL({}) as ydl:
                 info = ydl.extract_info(player, download=False)
@@ -150,6 +161,10 @@ class MusicBot(commands.Cog):
 
         if ctx.guild.id in self.queues and len(self.queues[ctx.guild.id]) != 0:
             url = self.queues[ctx.guild.id][0][0]
+
+            if url == constants.SPOTIFY_PLAYLIST_ITEM:
+                url = self.queues[ctx.guild.id][0][1]
+
             result = VideosSearch(url).result()["result"][0]
             info = {
                 "duration": result["duration"],
@@ -386,14 +401,15 @@ class MusicBot(commands.Cog):
 
         return embed
 
-    def queueSpotify(self, ctx,  result):
-        for index in range(1, len(result)):
+    def queueSpotify(self, ctx,  result, start):
+        for index in range(start, len(result)):
+            track = result[index]
             if ctx.guild.id in self.queues:
                 self.queues[ctx.guild.id].append(
-                    (result[index][0], result[index][1]))
+                    (constants.SPOTIFY_PLAYLIST_ITEM, track, "filler"))
             else:
                 self.queues[ctx.guild.id] = [
-                    (result[index][0], result[index][1])]
+                    (constants.SPOTIFY_PLAYLIST_ITEM, track, "filler")]
 
     @commands.command(aliases=["add", "playnext", "p"])
     async def play(self, ctx, *, url=None):
@@ -425,9 +441,18 @@ class MusicBot(commands.Cog):
                 await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
                 if (re.match(playlist_regex, url)):
                     try:
-                        result = Spotify.getYoutubeLinksFromPlaylist(url)
-                        url = result[0][0]
-                        self.queueSpotify(ctx, result)
+                        result = Spotify.getTracks(url)
+                        url = result[0]
+                        video_search = VideosSearch(url, limit=1)
+                        video_search_result = video_search.result()["result"]
+                        if(len(video_search_result) == 0):
+                            print("No videos found when searching")
+                            await ctx.send(f"❌ could not find {url}")
+                            return
+                        else:
+                            url = video_search_result[0]["link"]
+
+                        self.queueSpotify(ctx, result, 1)
 
                     except Exception as ex:
                         print(ex)
@@ -443,9 +468,11 @@ class MusicBot(commands.Cog):
                         link = video_urls[index].watch_url
                         title = video_urls[index].title
                         if ctx.guild.id in self.queues:
-                            self.queues[ctx.guild.id].append((link, title))
+                            self.queues[ctx.guild.id].append(
+                                (link, title, constants.YOUTUBE_PLAYLIST_ITEM))
                         else:
-                            self.queues[ctx.guild.id] = [(link, title)]
+                            self.queues[ctx.guild.id] = [
+                                (link, title, constants.YOUTUBE_PLAYLIST_ITEM)]
 
                 elif(not re.match(youtube_video_regex, url)):
                     # Perform search to find video
@@ -496,11 +523,10 @@ class MusicBot(commands.Cog):
 
             if(re.match(playlist_regex, url)):
                 try:
-                    result = Spotify.getYoutubeLinksFromPlaylist(url)
-                    self.queueSpotify(ctx, result)
+                    result = Spotify.getTracks(url)
+                    self.queueSpotify(ctx, result, 0)
                     await ctx.send(f"**Queued** 🎤 `{url}`")
                 except Exception as ex:
-                    print(ex)
                     print("No videos found when searching")
                     await ctx.send(f"❌ could not find {url}")
                 return
@@ -512,9 +538,11 @@ class MusicBot(commands.Cog):
                     link = video_urls[index].watch_url
                     title = video_urls[index].title
                     if ctx.guild.id in self.queues:
-                        self.queues[ctx.guild.id].append((link, title))
+                        self.queues[ctx.guild.id].append(
+                            (link, title, constants.YOUTUBE_PLAYLIST_ITEM))
                     else:
-                        self.queues[ctx.guild.id] = [(link, title)]
+                        self.queues[ctx.guild.id] = [
+                            (link, title, constants.YOUTUBE_PLAYLIST_ITEM)]
                 return
             elif(not re.match(song_link_regex, url)):
                 # Perform search to find video
@@ -532,8 +560,9 @@ class MusicBot(commands.Cog):
                 "result"][0]["title"]
             self.players[guild_id] = url
             if guild_id in self.queues:
-                self.queues[guild_id].append((url, title))
+                self.queues[guild_id].append(
+                    (url, title, constants.YOUTUBE_ITEM))
             else:
-                self.queues[guild_id] = [(url, title)]
+                self.queues[guild_id] = [(url, title, constants.YOUTUBE_ITEM)]
 
             await ctx.send(f"**Queued** 🎤 `{title}`")
