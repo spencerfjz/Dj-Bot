@@ -62,6 +62,8 @@ class MusicBot(commands.Cog):
 
                 vc = ctx.voice_client
                 self.current_track[ctx.guild.id] = info
+                self.client.loop.create_task(
+                    ctx.send(embed=self.build_youtube_embed(ctx, info)))
                 vc.play(audio_source, after=lambda event: self.check_queue(
                     ctx, ctx.guild.id))
         else:
@@ -160,19 +162,7 @@ class MusicBot(commands.Cog):
             return
 
         if ctx.guild.id in self.queues and len(self.queues[ctx.guild.id]) != 0:
-            url = self.queues[ctx.guild.id][0][0]
-
-            if url == constants.SPOTIFY_PLAYLIST_ITEM:
-                url = self.queues[ctx.guild.id][0][1]
-
-            result = VideosSearch(url).result()["result"][0]
-            info = {
-                "duration": result["duration"],
-                "title": result["title"],
-                "thumbnail": result["thumbnails"][0]["url"],
-            }
             await ctx.send("⏩ ***Skipped*** 👍")
-            await ctx.send(embed=self.build_youtube_embed(ctx, info))
             ctx.voice_client.stop()
         elif ctx.voice_client.is_playing():
             ctx.voice_client.stop()

@@ -7,6 +7,7 @@ import urllib.request
 import urllib.parse
 import re
 
+
 APIs = {
     "spotify": {
         "client_id": os.environ.get("spotify_client_id"),
@@ -19,14 +20,53 @@ APIs = {
     }
 }
 
+client_credentials_manager = SpotifyClientCredentials(
+    APIs["spotify"]["client_id"], APIs["spotify"]["client_secret"])
+
+spotify = spotipy.Spotify(
+    client_credentials_manager=client_credentials_manager)
+
+
+def getAlbum(album):
+    try:
+        trackList = []
+        results = spotify.album(album_id=album)
+        items = results["tracks"]["items"]
+        for i in items:
+            # In case there's only one artist.
+            if (i["artists"].__len__() == 1):
+                # We add trackName - artist.
+                trackList.append(i["name"] + " - " +
+                                 i["artists"][0]["name"])
+            # In case there's more than one artist.
+            else:
+                nameString = ""
+                # For each artist in the track.
+                for index, b in enumerate(i["artists"]):
+                    nameString += (b["name"])
+                    # If it isn't the last artist.
+                    if (i["artists"].__len__() - 1 != index):
+                        nameString += ", "
+                # Adding the track to the list.
+                trackList.append(i["name"] + " - " + nameString)
+        return trackList
+    except Exception:
+        return None
+
+
+def getSong(song):
+    try:
+        results = spotify.track(song)
+        print(results)
+        name = results["name"]
+        artist = results["artists"][0]["name"]
+        song_title = f"{name} - {artist}"
+    except Exception:
+        return None
+    return song_title
+
 
 def getTracks(playlistURL):
-    # Creating and authenticating our Spotify app.
-    client_credentials_manager = SpotifyClientCredentials(
-        APIs["spotify"]["client_id"], APIs["spotify"]["client_secret"])
-    spotify = spotipy.Spotify(
-        client_credentials_manager=client_credentials_manager)
-
     # Getting a playlist.
     results = spotify.user_playlist_tracks(user="", playlist_id=playlistURL)
     items = results["items"]
