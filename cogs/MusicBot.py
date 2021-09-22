@@ -118,7 +118,7 @@ class MusicBot(commands.Cog):
             await ctx.send("**Queue** is empty")
         else:
             await ctx. send("💥 **Cleared...** ⏹")
-            self.queues.clear()
+            self.queues.pop(ctx.guild.id, None)
 
     def is_valid_index(self, ctx, ind):
         if ind < 0 or ind >= len(self.queues[ctx.guild.id]):
