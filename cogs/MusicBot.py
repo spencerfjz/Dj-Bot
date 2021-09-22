@@ -119,7 +119,9 @@ class MusicBot(commands.Cog):
             for count, item in enumerate(search_results):
                 url = item["link"]
                 title = item["title"]
-                output_list.append(f"`{count+1}.` [{title}]({url})")
+                duration = item["duration"]
+                output_list.append(
+                    f"`{count+1}.` [{title}]({url}) **[{duration}]**")
 
             embed = discord.Embed(
                 title=f"**🔎 Search Results for: {search_argument}**",
