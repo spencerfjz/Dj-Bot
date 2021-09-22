@@ -91,7 +91,10 @@ class MusicBot(commands.Cog):
 
     @commands.command(aliases=["lookup"])
     async def search(self, ctx, *, search_argument=None):
-        if search_argument is None:
+        if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
+            await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
+            return
+        elif search_argument is None:
             guild_prefix = FireBase.retrieve_prefix(str(ctx.guild.id))
             embed = discord.Embed(
                 title=f"❌ **Invalid usage**",
