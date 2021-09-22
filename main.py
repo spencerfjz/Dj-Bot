@@ -61,7 +61,7 @@ async def ping(ctx):
 @client.event
 async def on_ready():
     print("Rhythm bot here for da beats.")
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Da Tunes 🎵"))
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="da tunes 🎵"))
 
 
 if __name__ == "__main__":
