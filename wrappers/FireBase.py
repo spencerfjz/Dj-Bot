@@ -42,6 +42,14 @@ class FireBaseContainer:
 
         self.db.collection("settings").document(guild_id).set(settings)
 
+    def update_announce_songs_settings(self, guild_id, announce_song):
+        settings = self.db.collection("settings").document(
+            guild_id).get().to_dict()
+
+        settings["announcesongs"] = announce_song
+
+        self.db.collection("settings").document(guild_id).set(settings)
+
     def add_text_channel_to_blacklist(self, guild_id, text_channel):
         settings = self.db.collection("settings").document(
             guild_id).get().to_dict()
@@ -68,3 +76,10 @@ class FireBaseContainer:
             guild_id).get().to_dict()
 
         return guild_settings["prefix"]
+
+    def retrieve_announce_songs_settings(self, guild_id):
+        settings_collection = self.db.collection("settings")
+        guild_settings = settings_collection.document(
+            guild_id).get().to_dict()
+
+        return guild_settings["announcesongs"]
