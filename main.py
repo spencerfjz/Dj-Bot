@@ -29,7 +29,7 @@ async def determine_prefix(bot, message):
 
 
 client = commands.Bot(command_prefix=determine_prefix,
-                      intents=discord.Intents.all())
+                      intents=discord.Intents.all(), help_command=None)
 
 for cog in cogs:
     cog.setup(client)
@@ -56,6 +56,12 @@ async def ping(ctx):
         embed = discord.Embed(
             title="PING", description=f":ping_pong: My ping is **{round(client.latency *1000)}** ms.", color=0x990000)
     await ctx.send(embed=embed)
+
+
+@client.command()
+async def help(ctx):
+    print("Reached help message")
+    return
 
 
 @client.event

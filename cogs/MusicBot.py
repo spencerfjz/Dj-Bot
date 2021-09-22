@@ -5,7 +5,7 @@ import time
 import os
 from sys import executable
 import constants
-from youtubesearchpython import VideosSearch
+from youtubesearchpython import VideosSearch, CustomSearch, VideoSortOrder
 import discord
 import asyncio
 from discord.ext import commands
@@ -88,6 +88,44 @@ class MusicBot(commands.Cog):
             print("Leaving empty voice channel.")
             self.queues.pop(member.guild.id, None)
             await voice_state.disconnect()
+
+    @commands.command(aliases=["lookup"])
+    async def search(self, ctx, *, search_argument=None):
+        if search_argument is None:
+            guild_prefix = FireBase.retrieve_prefix(str(ctx.guild.id))
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=f"{guild_prefix}search [query]",
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
+            return
+
+        search_results = CustomSearch(
+            query=search_argument, limit=10, searchPreferences=VideoSortOrder.viewCount).result()["result"]
+
+        if(len(search_results) == 0):
+            await ctx.send(f"❌ could not find {search_argument}")
+        else:
+            embed = discord.Embed(
+                title=f"**🔎 Search Results for: {search_argument}**",
+                colour=0x000000,
+            )
+
+            output_list = []
+            for count, item in enumerate(search_results):
+                url = item["link"]
+                title = item["title"]
+                output_list.append(f"`{count+1}.` [{title}]({url})")
+
+            embed = discord.Embed(
+                title=f"**🔎 Search Results for: {search_argument}**",
+                description="\n\n".join(output_list),
+                colour=0x000000,
+
+            )
+            embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+            await ctx.send(embed=embed)
 
     @commands.command(aliases=["now", "playing"])
     async def current(self, ctx):
