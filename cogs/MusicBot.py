@@ -55,7 +55,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                    # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
+                # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
 
                 self.players[id] = audio_source
                 print(f"Playing next song from queue")
@@ -118,7 +118,7 @@ class MusicBot(commands.Cog):
             await ctx.send("**Queue** is empty")
         else:
             await ctx. send("💥 **Cleared...** ⏹")
-            self.queues.clear()
+            self.queues.pop(ctx.guild.id, None)
 
     def is_valid_index(self, ctx, ind):
         if ind < 0 or ind >= len(self.queues[ctx.guild.id]):
@@ -505,7 +505,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                    # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
+                # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
 
                 print(f"Playing {url}")
 
