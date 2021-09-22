@@ -173,7 +173,7 @@ class SettingsBot(commands.Cog):
             embed.add_field(name="📄 **Current Setting:**",
                             value=f"`{announce_song_settings}`", inline=False)
             embed.add_field(
-                name="✏️ **Update:**", value=f"`{guild_prefix}announcesong [on | off]`", inline=False)
+                name="✏️ **Update:**", value=f"`{guild_prefix}announcesongs [on | off]`", inline=False)
 
             embed.add_field(name="✅ **Valid Settings:**",
                             value="`on or off only`", inline=False)
