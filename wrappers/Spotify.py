@@ -57,7 +57,6 @@ def getAlbum(album):
 def getSong(song):
     try:
         results = spotify.track(song)
-        print(results)
         name = results["name"]
         artist = results["artists"][0]["name"]
         song_title = f"{name} - {artist}"

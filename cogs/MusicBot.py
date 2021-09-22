@@ -55,7 +55,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                    # url2, executable="ffmpeg.exe")
+                    # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
 
                 self.players[id] = audio_source
                 print(f"Playing next song from queue")
@@ -378,7 +378,7 @@ class MusicBot(commands.Cog):
 
         return embed
 
-    def queueSpotify(self, ctx,  result, start):
+    def queueSpotifyPlaylist(self, ctx,  result, start):
         for index in range(start, len(result)):
             track = result[index]
             if ctx.guild.id in self.queues:
@@ -411,12 +411,43 @@ class MusicBot(commands.Cog):
             await self.queue(ctx, url)
         else:
             with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
-                youtube_video_regex = r"^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$"
-                youtube_playlist_regex = r"^.*(youtu.be\/|list=)([^#\&\?]*).*"
-                playlist_regex = r"^(https:\/\/open.spotify.com\/playlist\/)([a-zA-Z0-9]+)(.*)$"
-
                 await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
-                if (re.match(playlist_regex, url)):
+
+                if(re.match(constants.SPOTIFY_ALBUM_REGEX, url)):
+                    spotify_album_list = Spotify.getAlbum(url)
+                    if spotify_album_list is None:
+                        print("No videos found when searching")
+                        await ctx.send(f"❌ could not find {url}")
+                        return
+
+                    url = spotify_album_list[0]
+                    video_search = VideosSearch(url, limit=1)
+                    video_search_result = video_search.result()["result"]
+                    if(len(video_search_result) == 0):
+                        print("No videos found when searching")
+                        await ctx.send(f"❌ could not find {url}")
+                        return
+                    else:
+                        url = video_search_result[0]["link"]
+
+                    self.queueSpotifyPlaylist(ctx, spotify_album_list, 1)
+                elif (re.match(constants.SPOTIFY_TRACK_REGEX, url)):
+                    spotify_track = Spotify.getSong(url)
+                    if spotify_track is None:
+                        print("No videos found when searching")
+                        await ctx.send(f"❌ could not find {url}")
+                        return
+                    else:
+                        videoSearch = VideosSearch(spotify_track, limit=1)
+                        result = videoSearch.result()["result"]
+                        if(len(result) == 0):
+                            print("No videos found when searching")
+                            await ctx.send(f"❌ could not find {url}")
+                            return
+                        else:
+                            url = result[0]["link"]
+
+                elif (re.match(constants.SPOTIFY_PLAYLIST_REGEX, url)):
                     try:
                         result = Spotify.getTracks(url)
                         url = result[0]
@@ -429,14 +460,14 @@ class MusicBot(commands.Cog):
                         else:
                             url = video_search_result[0]["link"]
 
-                        self.queueSpotify(ctx, result, 1)
+                        self.queueSpotifyPlaylist(ctx, result, 1)
 
                     except Exception as ex:
                         print(ex)
                         print("No videos found when searching")
                         await ctx.send(f"❌ could not find {url}")
                         return
-                elif(re.match(youtube_playlist_regex, url)):
+                elif(re.match(constants.YOUTUBE_PLAYLIST_REGEX, url)):
                     playlist = Playlist(url)
                     video_urls = list(playlist.videos)
                     print(f"{len(video_urls)} items in playlist")
@@ -451,7 +482,7 @@ class MusicBot(commands.Cog):
                             self.queues[ctx.guild.id] = [
                                 (link, title, constants.YOUTUBE_PLAYLIST_ITEM)]
 
-                elif(not re.match(youtube_video_regex, url)):
+                elif(not re.match(constants.YOUTUBE_VIDEO_REGEX, url)):
                     # Perform search to find video
                     videoSearch = VideosSearch(url, limit=1)
                     result = videoSearch.result()["result"]
@@ -471,7 +502,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                    # url2, executable="ffmpeg.exe")
+                    # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
 
                 print(f"Playing {url}")
 
@@ -489,41 +520,25 @@ class MusicBot(commands.Cog):
     async def queue(self, ctx, url):
         print(f"Queueing {url}")
         await self.join(ctx)
-        YDL_OPTIONS = {}
-        vc = ctx.voice_client
+        await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
 
-        with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
-            song_link_regex = r"^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$"
-            youtube_playlist_regex = r"^.*(youtu.be\/|list=)([^#\&\?]*).*"
-            playlist_regex = r"^(https:\/\/open.spotify.com\/playlist\/)([a-zA-Z0-9]+)(.*)$"
-            await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
-
-            if(re.match(playlist_regex, url)):
-                try:
-                    result = Spotify.getTracks(url)
-                    self.queueSpotify(ctx, result, 0)
-                    await ctx.send(f"**Queued** 🎤 `{url}`")
-                except Exception as ex:
-                    print("No videos found when searching")
-                    await ctx.send(f"❌ could not find {url}")
+        if(re.match(constants.SPOTIFY_ALBUM_REGEX, url)):
+            spotify_album_list = Spotify.getAlbum(url)
+            if spotify_album_list is None:
+                print("No videos found when searching")
+                await ctx.send(f"❌ could not find {url}")
                 return
-            elif(re.match(youtube_playlist_regex, url)):
-                await ctx.send(f"**Queued** 🎤 `{url}`")
-                playlist = Playlist(url)
-                video_urls = list(playlist.videos)
-                for index in range(1, len(video_urls)):
-                    link = video_urls[index].watch_url
-                    title = video_urls[index].title
-                    if ctx.guild.id in self.queues:
-                        self.queues[ctx.guild.id].append(
-                            (link, title, constants.YOUTUBE_PLAYLIST_ITEM))
-                    else:
-                        self.queues[ctx.guild.id] = [
-                            (link, title, constants.YOUTUBE_PLAYLIST_ITEM)]
+            self.queueSpotifyPlaylist(ctx, spotify_album_list, 0)
+            await ctx.send(f"**Queued** 🎤 `{url}`")
+            return
+        elif (re.match(constants.SPOTIFY_TRACK_REGEX, url)):
+            spotify_track = Spotify.getSong(url)
+            if spotify_track is None:
+                print("No videos found when searching")
+                await ctx.send(f"❌ could not find {url}")
                 return
-            elif(not re.match(song_link_regex, url)):
-                # Perform search to find video
-                videoSearch = VideosSearch(url, limit=1)
+            else:
+                videoSearch = VideosSearch(spotify_track, limit=1)
                 result = videoSearch.result()["result"]
                 if(len(result) == 0):
                     print("No videos found when searching")
@@ -531,15 +546,48 @@ class MusicBot(commands.Cog):
                     return
                 else:
                     url = result[0]["link"]
-
-            guild_id = ctx.guild.id
-            title = VideosSearch(url, limit=1).result()[
-                "result"][0]["title"]
-            self.players[guild_id] = url
-            if guild_id in self.queues:
-                self.queues[guild_id].append(
-                    (url, title, constants.YOUTUBE_ITEM))
+        elif(re.match(constants.SPOTIFY_PLAYLIST_REGEX, url)):
+            try:
+                result = Spotify.getTracks(url)
+                self.queueSpotifyPlaylist(ctx, result, 0)
+                await ctx.send(f"**Queued** 🎤 `{url}`")
+            except Exception as ex:
+                print("No videos found when searching")
+                await ctx.send(f"❌ could not find {url}")
+            return
+        elif(re.match(constants.YOUTUBE_PLAYLIST_REGEX, url)):
+            await ctx.send(f"**Queued** 🎤 `{url}`")
+            playlist = Playlist(url)
+            video_urls = list(playlist.videos)
+            for index in range(1, len(video_urls)):
+                link = video_urls[index].watch_url
+                title = video_urls[index].title
+                if ctx.guild.id in self.queues:
+                    self.queues[ctx.guild.id].append(
+                        (link, title, constants.YOUTUBE_PLAYLIST_ITEM))
+                else:
+                    self.queues[ctx.guild.id] = [
+                        (link, title, constants.YOUTUBE_PLAYLIST_ITEM)]
+            return
+        elif(not re.match(constants.YOUTUBE_VIDEO_REGEX, url)):
+            # Perform search to find video
+            videoSearch = VideosSearch(url, limit=1)
+            result = videoSearch.result()["result"]
+            if(len(result) == 0):
+                print("No videos found when searching")
+                await ctx.send(f"❌ could not find {url}")
+                return
             else:
-                self.queues[guild_id] = [(url, title, constants.YOUTUBE_ITEM)]
+                url = result[0]["link"]
 
-            await ctx.send(f"**Queued** 🎤 `{title}`")
+        guild_id = ctx.guild.id
+        title = VideosSearch(url, limit=1).result()[
+            "result"][0]["title"]
+        self.players[guild_id] = url
+        if guild_id in self.queues:
+            self.queues[guild_id].append(
+                (url, title, constants.YOUTUBE_ITEM))
+        else:
+            self.queues[guild_id] = [(url, title, constants.YOUTUBE_ITEM)]
+
+        await ctx.send(f"**Queued** 🎤 `{title}`")
