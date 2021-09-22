@@ -62,8 +62,11 @@ class MusicBot(commands.Cog):
 
                 vc = ctx.voice_client
                 self.current_track[ctx.guild.id] = info
-                self.client.loop.create_task(
-                    ctx.send(embed=self.build_youtube_embed(ctx, info)))
+                announce_songs_settings = FireBase.retrieve_announce_songs_settings(
+                    str(ctx.guild.id))
+                if announce_songs_settings:
+                    self.client.loop.create_task(
+                        ctx.send(embed=self.build_youtube_embed(ctx, info)))
                 vc.play(audio_source, after=lambda event: self.check_queue(
                     ctx, ctx.guild.id))
         else:
@@ -508,9 +511,11 @@ class MusicBot(commands.Cog):
 
                 embed = self.build_youtube_embed(ctx, info)
                 title = info["title"]
-
-                await ctx.send(f"**Playing** 🎶 `{title} - Now!`")
-                await ctx.send(embed=embed)
+                announce_songs_settings = FireBase.retrieve_announce_songs_settings(
+                    str(ctx.guild.id))
+                if announce_songs_settings:
+                    await ctx.send(f"**Playing** 🎶 `{title} - Now!`")
+                    await ctx.send(embed=embed)
 
                 self.players[ctx.guild.id] = audio_source
                 self.current_track[ctx.guild.id] = info

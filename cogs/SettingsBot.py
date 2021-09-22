@@ -44,6 +44,24 @@ class SettingsBot(commands.Cog):
             await ctx.send(f"👍 **Prefix set to** `{prefix}`")
 
     @commands.command()
+    async def announcesongs(self, ctx, setting=None):
+        if setting is None or (setting.lower() != "on" and setting.lower() != "off"):
+            error_message = "No setting provided!" if setting is None else "Setting must be either on or off (e.g. [on | off])"
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=error_message,
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
+        else:
+            desired_setting = True if setting.lower() == "on" else False
+            FireBase.update_announce_songs_settings(
+                str(ctx.guild.id), desired_setting)
+
+            action_string = "now" if desired_setting else "not"
+            await ctx.send(f"**✅ I will {action_string} announce new songs.**")
+
+    @commands.command()
     async def blacklist(self, ctx, arg=None):
         if arg is None:
             embed = discord.Embed(
@@ -98,6 +116,9 @@ class SettingsBot(commands.Cog):
             embed.add_field(
                 name="♻️ **Reset**", value=f"`{guild_prefix}settings reset`", inline=True)
 
+            embed.add_field(
+                name="🔔 **Announce Songs**", value=f"`{guild_prefix}settings announcesongs`", inline=False)
+
             await ctx.send(embed=embed)
         elif arg == "prefix":
             embed = discord.Embed(
@@ -138,4 +159,22 @@ class SettingsBot(commands.Cog):
                 description="Resets server settings back to default (e.g. reset blacklist & prefix)",
                 color=0x000000
             )
+            await ctx.send(embed=embed)
+        elif arg == "announcesongs":
+            announce_song_settings = "on" if FireBase.retrieve_announce_songs_settings(
+                str(ctx.guild.id)) else "off"
+
+            embed = discord.Embed(
+                title="**Bootleg Rhythm Settings - ** 🔔 **Announce Songs**",
+                description="Sets whether or not songs are announced as they are played.",
+                color=0x000000
+            )
+
+            embed.add_field(name="📄 **Current Setting:**",
+                            value=f"`{announce_song_settings}`", inline=False)
+            embed.add_field(
+                name="✏️ **Update:**", value=f"`{guild_prefix}announcesong [on | off]`", inline=False)
+
+            embed.add_field(name="✅ **Valid Settings:**",
+                            value="`on or off only`", inline=False)
             await ctx.send(embed=embed)
