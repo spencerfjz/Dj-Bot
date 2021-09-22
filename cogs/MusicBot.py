@@ -343,7 +343,7 @@ class MusicBot(commands.Cog):
                 await paginator.run(embeds)
 
     def build_youtube_embed(self, ctx, info):
-        duration = info["duration"]
+        duration = time.strftime("%M:%S", time.gmtime(info["duration"]))
         title = info["title"]
         author_name = ctx.message.author.name if ctx.message else None
         thumbnail = info["thumbnail"]
@@ -361,8 +361,8 @@ class MusicBot(commands.Cog):
             embed.add_field(
                 name=f"`Requested by:`", value=author_name, inline=False)
 
-        next_song = self.queues[ctx.guild.id][1][1] if ctx.guild.id in self.queues and len(
-            self.queues[ctx.guild.id]) > 1 else "Nothing"
+        next_song = self.queues[ctx.guild.id][0][1] if ctx.guild.id in self.queues and len(
+            self.queues[ctx.guild.id]) >= 1 else "Nothing"
 
         embed.add_field(
             name=f"`Up Next:`", value=next_song, inline=False)
