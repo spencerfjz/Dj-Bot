@@ -3,6 +3,8 @@ import ctypes
 import sys
 import os
 import ctypes.util
+from discord import colour
+from discord import guild
 from discord.ext import commands
 from discord.errors import ClientException
 from discord_components import Button, ButtonStyle
@@ -61,7 +63,56 @@ async def ping(ctx):
 @client.command()
 async def help(ctx):
     print("Reached help message")
-    return
+    guild_prefix = SettingsBot.FireBase.retrieve_prefix(str(ctx.guild.id))
+    embed = discord.Embed(
+        title="**Bootleg Rhythm Bot Help Page**",
+        description=f"ℹ️ In order to use Bootleg Rhythm, use the prefix `{guild_prefix}` followed by the desired command",
+        colour=discord.Colour.red())
+
+    embed.add_field(name="**▶️ Play **",
+                    value=f"``{guild_prefix}play [youtube-link | spotify-link | query]``", inline=True)
+    embed.add_field(name="**⏸️ Pause **",
+                    value=f"``{guild_prefix}pause``", inline=True)
+    embed.add_field(name="**⏯️ Resume**",
+                    value=f"``{guild_prefix}resume``", inline=True)
+
+    embed.add_field(name="**🔨 Remove from Queue**",
+                    value=f"``{guild_prefix}remove [Index]``", inline=True)
+
+    embed.add_field(name="**🧾 Show Queue**",
+                    value=f"``{guild_prefix}queue``", inline=True)
+
+    embed.add_field(name="**🎶 Lyrics**",
+                    value=f"``{guild_prefix}lyrics``", inline=True)
+
+    embed.add_field(name="**🔎 Search Song**",
+                    value=f"``{guild_prefix}search [Song]``", inline=True)
+
+    embed.add_field(name="**📟 Show Current Song**",
+                    value=f"``{guild_prefix}current``", inline=True)
+
+    embed.add_field(name="**🆑 Clear Queue**",
+                    value=f"``{guild_prefix}clear``", inline=True)
+
+    embed.add_field(name="**⏩ Skip to Position in Queue**",
+                    value=f"``{guild_prefix}skipto [Position]``", inline=True)
+
+    embed.add_field(name="**⏭️ Skip to Next Item in Queue**",
+                    value=f"``{guild_prefix}next``", inline=True)
+
+    embed.add_field(name="**🔀 Shuffle Queue**",
+                    value=f"``{guild_prefix}shuffle``", inline=True)
+
+    embed.add_field(name="**🤖 Join Voice Channel**",
+                    value=f"``{guild_prefix}join``", inline=True)
+
+    embed.add_field(name="**🥺 Disconnect from Voice Channel**",
+                    value=f"``{guild_prefix}disconnect``", inline=True)
+
+    embed.add_field(name="**⚙️ Access Settings**",
+                    value=f"``{guild_prefix}settings``", inline=True)
+
+    await ctx.send(embed=embed)
 
 
 @client.event
