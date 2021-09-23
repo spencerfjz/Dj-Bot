@@ -55,7 +55,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
+                    # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
 
                 self.players[id] = audio_source
                 print(f"Playing next song from queue")
@@ -401,11 +401,11 @@ class MusicBot(commands.Cog):
         )
         embed.set_thumbnail(url=thumbnail)
         embed.add_field(
-            name=f"`Length:`", value=duration, inline=False)
+            name=f"`Length:`", value=duration, inline=True)
 
         if author_name is not None:
             embed.add_field(
-                name=f"`Requested by:`", value=author_name, inline=False)
+                name=f"`Requested by:`", value=author_name, inline=True)
 
         next_song = self.queues[ctx.guild.id][0][1] if ctx.guild.id in self.queues and len(
             self.queues[ctx.guild.id]) >= 1 else "Nothing"
@@ -434,8 +434,27 @@ class MusicBot(commands.Cog):
                 self.queues[ctx.guild.id] = [
                     (constants.SPOTIFY_PLAYLIST_ITEM, track, "filler")]
 
+    def build_spotify_playlist_embed(self, ctx, playlist_length, playlist_name, playlist_image_uri, position):
+        embed = discord.Embed(
+            colour=discord.Colour.blue(),
+            description=f"**{playlist_name}**"
+        )
+
+        embed.set_thumbnail(url=playlist_image_uri)
+        embed.set_author(name="Playlist added to queue",
+                         icon_url=ctx.author.avatar_url)
+        embed.add_field(name="**Position in queue**",
+                        value=position, inline=True)
+
+        embed.add_field(name="**Enqueued**",
+                        value=f"`{playlist_length}` songs", inline=True)
+
+        return embed
+
     @commands.command(aliases=["add", "playnext", "p"])
     async def play(self, ctx, *, url=None):
+        announce_songs_settings = FireBase.retrieve_announce_songs_settings(
+            str(ctx.guild.id))
         if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
             await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
             return
@@ -495,7 +514,8 @@ class MusicBot(commands.Cog):
 
                 elif (re.match(constants.SPOTIFY_PLAYLIST_REGEX, url)):
                     try:
-                        result = Spotify.getTracks(url)
+                        result, playlist_name, playlist_image_uri = Spotify.getTracks(
+                            url)
                         url = result[0]
                         video_search = VideosSearch(url, limit=1)
                         video_search_result = video_search.result()["result"]
@@ -507,7 +527,8 @@ class MusicBot(commands.Cog):
                             url = video_search_result[0]["link"]
 
                         self.queueSpotifyPlaylist(ctx, result, 1)
-
+                        if announce_songs_settings:
+                            await ctx.send(embed=self.build_spotify_playlist_embed(ctx, len(result), playlist_name, playlist_image_uri, "Now"))
                     except Exception as ex:
                         print(ex)
                         print("No videos found when searching")
@@ -548,14 +569,13 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
+                    # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
 
                 print(f"Playing {url}")
 
                 embed = self.build_youtube_embed(ctx, info)
                 title = info["title"]
-                announce_songs_settings = FireBase.retrieve_announce_songs_settings(
-                    str(ctx.guild.id))
+
                 if announce_songs_settings:
                     await ctx.send(f"**Playing** 🎶 `{title} - Now!`")
                     await ctx.send(embed=embed)
@@ -568,6 +588,9 @@ class MusicBot(commands.Cog):
     async def queue(self, ctx, url):
         print(f"Queueing {url}")
         await self.join(ctx)
+        announce_songs_settings = FireBase.retrieve_announce_songs_settings(
+            str(ctx.guild.id))
+
         await ctx.send(f"🎵 **Searching** 🔎 `{url}`")
 
         if(re.match(constants.SPOTIFY_ALBUM_REGEX, url)):
@@ -596,9 +619,13 @@ class MusicBot(commands.Cog):
                     url = result[0]["link"]
         elif(re.match(constants.SPOTIFY_PLAYLIST_REGEX, url)):
             try:
-                result = Spotify.getTracks(url)
+                result, playlist_name, playlist_image_uri = Spotify.getTracks(
+                    url)
+                position = len(
+                    self.queues[ctx.guild.id]) + 1 if ctx.guild.id in self.queues else 0
                 self.queueSpotifyPlaylist(ctx, result, 0)
-                await ctx.send(f"**Queued** 🎤 `{url}`")
+                if announce_songs_settings:
+                    await ctx.send(embed=self.build_spotify_playlist_embed(ctx, len(result), playlist_name, playlist_image_uri, position))
             except Exception as ex:
                 print("No videos found when searching")
                 await ctx.send(f"❌ could not find {url}")

@@ -68,6 +68,12 @@ def getSong(song):
 def getTracks(playlistURL):
     # Getting a playlist.
     results = spotify.user_playlist_tracks(user="", playlist_id=playlistURL)
+    name_image_payload = spotify.user_playlist(
+        user="", playlist_id=playlistURL, fields="name, images")
+    name = name_image_payload["name"]
+    image_uri = name_image_payload["images"][0]["url"]
+
+    print(name, image_uri)
     items = results["items"]
     while results["next"] is not None:
         results = spotify.next(results)
@@ -93,7 +99,7 @@ def getTracks(playlistURL):
             # Adding the track to the list.
             trackList.append(i["track"]["name"] + " - " + nameString)
 
-    return trackList
+    return trackList, name, image_uri
 
 
 def searchYoutubeAlternative(songName):
