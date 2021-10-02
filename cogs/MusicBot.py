@@ -48,6 +48,7 @@ class MusicBot(commands.Cog):
                     player = result[0]["link"]
 
             with youtube_dl.YoutubeDL({}) as ydl:
+                ydl.cache.remove()
                 info = ydl.extract_info(player, download=False)
                 url2 = info["formats"][0]["url"]
                 # Linux
@@ -55,7 +56,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                    # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
+                # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
 
                 self.players[id] = audio_source
                 print(f"Playing next song from queue")
@@ -560,6 +561,7 @@ class MusicBot(commands.Cog):
                     else:
                         url = result[0]["link"]
 
+                ydl.cache.remove()
                 info = ydl.extract_info(url, download=False)
 
                 url2 = info["formats"][0]["url"]
@@ -569,7 +571,7 @@ class MusicBot(commands.Cog):
 
                 # WINDOWS
                 # audio_source = discord.FFmpegPCMAudio(
-                    # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
+                # url2, executable="ffmpeg.exe", **FFMPEG_OPTS)
 
                 print(f"Playing {url}")
 
