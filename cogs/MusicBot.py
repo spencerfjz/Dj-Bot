@@ -223,7 +223,7 @@ class MusicBot(commands.Cog):
             return
 
         if ctx.author.voice is None:
-            await ctx.send(f"You must be in voice channel! {ctx.author.mention}")
+            await ctx.send(f"**{ctx.author.mention}, you must be in a voice channel.**")
 
         voice_channel = ctx.author.voice.channel
 
@@ -360,7 +360,12 @@ class MusicBot(commands.Cog):
             return
 
         if ctx.guild.id not in self.queues or len(self.queues[ctx.guild.id]) == 0:
-            await ctx.send("**Queue** is empty 🗍")
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=f"Queue is empty",
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
         else:
             paginator = DiscordUtils.Pagination.CustomEmbedPaginator(
                 ctx, remove_reactions=True, timeout=600)
