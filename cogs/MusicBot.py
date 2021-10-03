@@ -307,6 +307,10 @@ class MusicBot(commands.Cog):
             await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
             return
 
+        if ctx.author.voice is None:
+            await ctx.send(f"**{ctx.author.mention}, you must be in a voice channel.**")
+            return
+
         ctx.voice_client.pause()
         await ctx.send("**Paused** ⏸️")
 
@@ -316,7 +320,7 @@ class MusicBot(commands.Cog):
             await ctx.send(embed=self.build_blacklist_embed(ctx.channel))
             return
         elif ctx.author.voice is None:
-            await ctx.send(f"You must be in voice channel! {ctx.author.mention}")
+            await ctx.send(f"**{ctx.author.mention}, you must be in a voice channel.**")
         elif ctx.voice_client is None:
             guild_prefix = FireBase.retrieve_prefix(str(ctx.guild.id))
             await ctx.send(f"❌ **I am not connected to a voice channel.** Type `{guild_prefix}join` to get me in one")
