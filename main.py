@@ -44,6 +44,18 @@ async def purge(ctx):
 
 
 @client.command()
+async def code(ctx, *, code):
+    try:
+        code = code.replace('`', '')
+        code = f"a = {code}"
+        loc = {}
+        exec(code, loc)
+        await ctx.send("```" + loc["a"] + "```")
+    except Exception as e:
+        await ctx.send(e)
+
+
+@client.command()
 async def ping(ctx):
     if round(client.latency * 1000) <= 50:
         embed = discord.Embed(
