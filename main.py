@@ -50,7 +50,8 @@ async def code(ctx, *, code):
         code = f"a = {code}"
         loc = {}
         exec(code, loc)
-        await ctx.send("```" + loc["a"] + "```")
+        val = loc["a"]
+        await ctx.send(f"```{val}```")
     except Exception as e:
         await ctx.send(e)
 
