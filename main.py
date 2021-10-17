@@ -46,6 +46,11 @@ async def purge(ctx):
     await ctx.send(f"♻️ Cleared {len(deleted)} messages")
 
 
+@client.command(aliases=["purgeme"])
+async def cleanseme(ctx): 
+    deleted = await ctx.channel.purge(limit=100, check=lambda m: m.author.id == ctx.author.id)
+    await ctx.send(f"♻️ Cleared {len(deleted)} messages by {ctx.author}")
+
 @contextlib.contextmanager
 def stdoutIO(stdout=None):
     old = sys.stdout
