@@ -287,7 +287,8 @@ class MusicBot(commands.Cog):
             paginator.add_reaction('⏪', "back")
             paginator.add_reaction('⏩', "next")
             paginator.add_reaction('⏭️', "last")
-            lyrics_list = [lyrics[i:i+600] for i in range(0, len(lyrics), 600)]
+            lyrics_list = [lyrics[i:i+1400]
+                           for i in range(0, len(lyrics), 1400)]
             embeds = []
             for count, lyrics_set in enumerate(lyrics_list):
                 embed = discord.Embed(color=discord.Colour.green()).add_field(

@@ -47,7 +47,7 @@ async def purge(ctx):
 
 
 @client.command(aliases=["purgeme"])
-async def cleanseme(ctx): 
+async def cleanseme(ctx):
     deleted = await ctx.channel.purge(limit=100, check=lambda m: m.author.id == ctx.author.id)
     await ctx.send(f"♻️ Cleared {len(deleted)} messages by {ctx.author}")
 
@@ -75,7 +75,7 @@ async def code(ctx, *, code):
             paginator.add_reaction('⏪', "back")
             paginator.add_reaction('⏩', "next")
             paginator.add_reaction('⏭️', "last")
-            code_list = [result[i:i+600] for i in range(0, len(result), 600)]
+            code_list = [result[i:i+1400] for i in range(0, len(result), 1400)]
             embeds = []
             for count, code_set in enumerate(code_list):
                 embed = discord.Embed(color=discord.Colour.green()).add_field(
