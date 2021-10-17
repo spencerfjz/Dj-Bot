@@ -4,6 +4,7 @@ import sys
 import os
 import contextlib
 import ctypes.util
+import DiscordUtils
 from io import StringIO
 from discord import colour
 from discord import guild
@@ -62,10 +63,26 @@ async def code(ctx, *, code):
         with stdoutIO() as s:
             exec(code)
         result = s.getvalue()
-        if len(result) == 0:
-            await ctx.send("❌ **Source code has no output**")
-        else:
-            await ctx.send(f"```{result}```")
+        if len(result) != 0:
+            paginator = DiscordUtils.Pagination.CustomEmbedPaginator(
+                ctx, remove_reactions=True, timeout=600)
+            paginator.add_reaction('⏮️', "first")
+            paginator.add_reaction('⏪', "back")
+            paginator.add_reaction('⏩', "next")
+            paginator.add_reaction('⏭️', "last")
+            code_list = [result[i:i+600] for i in range(0, len(result), 600)]
+            embeds = []
+            for count, code_set in enumerate(code_list):
+                embed = discord.Embed(color=discord.Colour.green()).add_field(
+                    name=f"Source Code Output: ", value=f"Page {count+1}")
+                embed.add_field(name=f"`Output:`",
+                                value=code_set, inline=False)
+                embeds.append(embed)
+
+            if len(embeds) == 1:
+                await ctx.send(embed=embeds[0])
+            else:
+                await paginator.run(embeds)
     except Exception as e:
         await ctx.send(e)
 
