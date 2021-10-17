@@ -83,6 +83,8 @@ async def code(ctx, *, code):
                 await ctx.send(embed=embeds[0])
             else:
                 await paginator.run(embeds)
+        else:
+            await ctx.send("**Code executed.**")
     except Exception as e:
         await ctx.send(e)
 
