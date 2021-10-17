@@ -572,7 +572,12 @@ class MusicBot(commands.Cog):
                         url = result[0]["link"]
 
                 ydl.cache.remove()
-                info = ydl.extract_info(url, download=False)
+                try:
+                    info = ydl.extract_info(url, download=False)
+                except Exception as e:
+                    print(e)
+                    await ctx.send(f"**Error locating video, please try again later**")
+                    return
 
                 url2 = info["formats"][0]["url"]
 
