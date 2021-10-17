@@ -2,7 +2,9 @@ import discord
 import ctypes
 import sys
 import os
+import contextlib
 import ctypes.util
+from io import StringIO
 from discord import colour
 from discord import guild
 from discord.ext import commands
@@ -43,15 +45,23 @@ async def purge(ctx):
     await ctx.send(f"♻️ Cleared {len(deleted)} messages")
 
 
+@contextlib.contextmanager
+def stdoutIO(stdout=None):
+    old = sys.stdout
+    if stdout is None:
+        stdout = StringIO()
+    sys.stdout = stdout
+    yield stdout
+    sys.stdout = old
+
+
 @client.command()
 async def code(ctx, *, code):
     try:
-        code = code.replace('`', '')
-        code = f"a = {code}"
-        loc = {}
-        exec(code, loc)
-        val = loc["a"]
-        await ctx.send(f"```{val}```")
+        with stdoutIO() as s:
+            exec(code)
+        result = s.getvalue()
+        await ctx.send(f"```{result}```")
     except Exception as e:
         await ctx.send(e)
 
