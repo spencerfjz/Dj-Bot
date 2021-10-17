@@ -58,6 +58,7 @@ def stdoutIO(stdout=None):
 @client.command()
 async def code(ctx, *, code):
     try:
+        code = code.replace('`', '')
         with stdoutIO() as s:
             exec(code)
         result = s.getvalue()
