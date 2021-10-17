@@ -63,7 +63,7 @@ async def code(ctx, *, code):
             exec(code)
         result = s.getvalue()
         if len(result) == 0:
-            await ctx.send("❌ **Nothing playing in this server**")
+            await ctx.send("❌ **Source code has no output**")
         else:
             await ctx.send(f"```{result}```")
     except Exception as e:
