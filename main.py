@@ -51,6 +51,7 @@ async def cleanseme(ctx):
     deleted = await ctx.channel.purge(limit=100, check=lambda m: m.author.id == ctx.author.id)
     await ctx.send(f"♻️ Cleared {len(deleted)} messages by {ctx.author}")
 
+
 @contextlib.contextmanager
 def stdoutIO(stdout=None):
     old = sys.stdout
@@ -75,7 +76,7 @@ async def code(ctx, *, code):
             paginator.add_reaction('⏪', "back")
             paginator.add_reaction('⏩', "next")
             paginator.add_reaction('⏭️', "last")
-            code_list = [result[i:i+1400] for i in range(0, len(result), 1400)]
+            code_list = [result[i:i+900] for i in range(0, len(result), 900)]
             embeds = []
             for count, code_set in enumerate(code_list):
                 embed = discord.Embed(color=discord.Colour.green()).add_field(
