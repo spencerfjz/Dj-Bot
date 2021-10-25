@@ -129,7 +129,7 @@ async def help(ctx):
                     value=f"``{guild_prefix}resume``", inline=True)
 
     embed.add_field(name="**🔨 Remove from Queue**",
-                    value=f"``{guild_prefix}remove [Index]``", inline=True)
+                    value=f"``{guild_prefix}remove [Position]``", inline=True)
 
     embed.add_field(name="**🧾 Show Queue**",
                     value=f"``{guild_prefix}queue``", inline=True)
