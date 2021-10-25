@@ -90,6 +90,31 @@ class MusicBot(commands.Cog):
             self.queues.pop(member.guild.id, None)
             await voice_state.disconnect()
 
+    @commands.command(aliases="move", "moveto")
+    async def swap(self, ctx, position1, position2):
+        guild_prefix = FireBase.retrieve_prefix(str(ctx.guild.id))
+        if not position1 or not position2 or not position1.isdigit() or not position2.isdigit():
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=f"{guild_prefix}swap [Position1] [Postion2]",
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
+        if not self.is_valid_index(ctx, position1) or not self.is_valid_index(position2):
+            embed = discord.Embed(
+                title=f"❌ **Invalid usage**",
+                description=f"{guild_prefix}swap [Position1] [Postion2]",
+                colour=discord.Colour.dark_red()
+            )
+            await ctx.send(embed=embed)
+        else:
+            title1, title2 = self.queues[ctx.guild.id][position1], self.queues[ctx.guild.id][position2]
+
+            self.queues[ctx.guild.id][position1], self.queues[ctx.guild.id][position2] = self.queues[
+                ctx.guild.id][position2], self.queues[ctx.guild.id][position1],
+
+            await ctx.send(f"✅ **Swapped** `{title1}` and `{title2}`")
+
     @commands.command(aliases=["lookup"])
     async def search(self, ctx, *, search_argument=None):
         if FireBase.is_in_blacklist(str(ctx.guild.id), str(ctx.channel.id)):
