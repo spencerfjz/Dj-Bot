@@ -91,7 +91,7 @@ class MusicBot(commands.Cog):
             await voice_state.disconnect()
 
     @commands.command(aliases="move", "moveto")
-    async def swap(self, ctx, position1, position2):
+    async def swap(self, ctx, position1 = None, position2 = None):
         guild_prefix = FireBase.retrieve_prefix(str(ctx.guild.id))
         if not position1 or not position2 or not position1.isdigit() or not position2.isdigit():
             embed = discord.Embed(
