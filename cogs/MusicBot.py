@@ -100,7 +100,7 @@ class MusicBot(commands.Cog):
                 colour=discord.Colour.dark_red()
             )
             await ctx.send(embed=embed)
-        if not self.is_valid_index(ctx, position1) or not self.is_valid_index(position2):
+        elif not self.is_valid_index(ctx, position1) or not self.is_valid_index(ctx, position2):
             embed = discord.Embed(
                 title=f"❌ **Invalid usage**",
                 description=f"{guild_prefix}swap [Position1] [Postion2]",
