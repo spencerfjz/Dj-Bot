@@ -116,7 +116,7 @@ class MusicBot(commands.Cog):
             await ctx.send(embed=embed)
         else:
             position1, position2 = int(position1) - 1, int(position2) - 1
-            title1, title2 = self.queues[ctx.guild.id][position1], self.queues[ctx.guild.id][position2]
+            title1, title2 = self.queues[ctx.guild.id][position1][1], self.queues[ctx.guild.id][position2][1]
             self.queues[ctx.guild.id][position1], self.queues[ctx.guild.id][position2] = self.queues[
                 ctx.guild.id][position2], self.queues[ctx.guild.id][position1],
 
