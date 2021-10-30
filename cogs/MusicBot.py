@@ -298,9 +298,10 @@ class MusicBot(commands.Cog):
                             value="No song currently playing", inline=False)
             await ctx.send(embed=embed)
         else:
-            title = self.current_track[ctx.guild.id]["title"]
-            await ctx.send(f"🔎 **Searching lyrics for** `{title}`")
-            song_search = genius_api.search_song(title)
+            artist, song_name = self.current_track[ctx.guild.id]["title"].split(
+                " - ")
+            await ctx.send(f"🔎 **Searching lyrics for** `{song_name}`")
+            song_search = genius_api.search_song(song_name, artist)
             if song_search is None:
                 embed = discord.Embed(
                     title=f"😥 **Lyrics Not Found**",
@@ -308,7 +309,7 @@ class MusicBot(commands.Cog):
                     colour=discord.Colour.dark_red()
                 )
                 embed.add_field(name="`Error:`",
-                                value=f"No lyrics found for {title}", inline=False)
+                                value=f"No lyrics found for {song_name}", inline=False)
                 await ctx.send(embed=embed)
                 return
 
@@ -324,7 +325,7 @@ class MusicBot(commands.Cog):
             embeds = []
             for count, lyrics_set in enumerate(lyrics_list):
                 embed = discord.Embed(color=discord.Colour.green()).add_field(
-                    name=f"Lyrics for {title}", value=f"Page {count+1}")
+                    name=f"Lyrics for {song_name}", value=f"Page {count+1}")
                 embed.add_field(name=f"`Lyrics:`",
                                 value=lyrics_set, inline=False)
                 embeds.append(embed)
